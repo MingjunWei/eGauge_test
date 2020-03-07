@@ -1,4 +1,3 @@
-==============================
 eGauge open source Python code
 ==============================
 
@@ -9,21 +8,23 @@ Please see LICENSE for details.  eGauge Systems LLC also reserved the
 rights to add, modify, or remove code from this repository or the
 entire repository without notice.
 
-# Overview of available modules
 
-## egauge.webapi
+Overview of available modules
+-----------------------------
+
+* egauge.webapi
 
 The classes in this module provide access to eGauge web services.  The
 APIs may be available on eGauge meters and/or as cloud-based web
 services.
 
-## egauge.ctid
+* egauge.ctid
 
-The classes in this module support manufacturing CTidÂ® sensors.  CTidÂ®
+The classes in this module support manufacturing CTid® sensors.  CTid®
 is patented technology and shall be used in accordance with the
 licensing agreements governing its use.
 
-## egauge.qt4
+* egauge.qt4
 
 The classes in this module support PyQt4-based graphical
 user-interfaces.
