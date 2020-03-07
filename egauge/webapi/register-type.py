@@ -31,11 +31,11 @@ class Units:
 
     # Preferred units for METRIC and IMPERIAL systems:
     preferred = [
-        ['kW', 'kWh', 'kVA', 'kVAh', 'kvar', 'kvahr', 'kg', 'kg/s', 'kWh/m^2',
-         'km/h', 'hPa', 'Ah', 'Vh'],
-        ['kW', 'kWh', 'kVA', 'kVAh', 'kvar', 'kvahr', 'lbs', 'lbs/s', 'kWh/m^2',
-         'mph', 'inHg', 'Ah', 'Vh', 'ft', '°F', 'lbs·s', 'inHg·s',
-         'ft·s', '°F·s']
+        ['kW', 'kWh', 'kVA', 'kVAh', 'kvar', 'kvahr', 'kg', 'kg/s',
+         'kWh/m^2', 'km/h', 'hPa', 'Ah', 'Vh'],
+        ['kW', 'kWh', 'kVA', 'kVAh', 'kvar', 'kvahr', 'lbs', 'lbs/s',
+         'kWh/m^2', 'mph', 'inHg', 'Ah', 'Vh', 'ft', '°F', 'lbs·s',
+         'inHg·s', 'ft·s', '°F·s']
     ]
 
     table = {

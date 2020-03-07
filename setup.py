@@ -21,7 +21,7 @@ setuptools.setup(
     license='MIT License',  # example license
     description='.',
     long_description=README,
-    long_description_content_type='text/markdown',
+    long_description_content_type='text/x-rst',
     url='https://bitbucket.org/egauge/python/',
     author='David Mosberger-Tang',
     author_email='davidm@egauge.net',
