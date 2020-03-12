@@ -30,4 +30,4 @@
 '''All WebAPI exceptions derive from the exception defined here.'''
 
 class Error(Exception):
-    '''Raised if there is any error with register data.'''
+    '''Base class of all WebAPI exceptions.'''

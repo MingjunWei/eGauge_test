@@ -19,8 +19,24 @@ egauge.webapi
 -------------
 
 The classes in this module provide access to eGauge web services.  The
-APIs may be available on eGauge meters and/or as cloud-based web
+APIs may be available on eGauge devices and/or as cloud-based web
 services.
+
+|
+
+egauge.webapi.device
+--------------------
+
+The classes in this module provide access to APIs implemented on
+eGauge devices.
+
+|
+
+egauge.webapi.cloud
+-------------------
+
+The classes in this module provide access to APIs implemented by
+eGauge cloud services.
 
 |
 

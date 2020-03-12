@@ -33,7 +33,7 @@ service.'''
 import decimal
 import json
 
-from .error import Error
+from ..error import Error
 from .register_row import RegisterRow
 
 class RegisterError(Error):

@@ -29,9 +29,9 @@
 #
 '''Module to provide access to a device's JSON WebAPI.'''
 
-from . import json_api
+from .. import json_api
 
-from .error import Error
+from ..error import Error
 
 class DeviceError(Error):
     '''Raised if for device related errors.'''

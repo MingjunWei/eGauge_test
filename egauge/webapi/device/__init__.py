@@ -27,5 +27,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-from .auth import *
-from .error import *
+from .device import *
+from .local import *
+from .register import *
+from .register_row import *

@@ -35,9 +35,9 @@ import logging
 
 import urllib.parse
 
-from . import json_api
+from .. import json_api
 
-from .error import Error
+from ..error import Error
 
 log = logging.getLogger(__name__)
 
