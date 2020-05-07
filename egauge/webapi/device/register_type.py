@@ -32,10 +32,10 @@ class Units:
     # Preferred units for METRIC and IMPERIAL systems:
     preferred = [
         ['kW', 'kWh', 'kVA', 'kVAh', 'kvar', 'kvahr', 'kg', 'kg/s',
-         'kWh/m^2', 'km/h', 'hPa', 'Ah', 'Vh'],
+         'kWh/m^2', 'km/h', 'hPa', 'Ah', 'Vh', 'L/m', 'L'],
         ['kW', 'kWh', 'kVA', 'kVAh', 'kvar', 'kvahr', 'lbs', 'lbs/s',
          'kWh/m^2', 'mph', 'inHg', 'Ah', 'Vh', 'ft', '°F', 'lbs·s',
-         'inHg·s', 'ft·s', '°F·s']
+         'inHg·s', 'ft·s', '°F·s', 'gpm', 'gal']
     ]
 
     table = {
@@ -47,10 +47,10 @@ class Units:
                             name='Apparent Power'),
         'V': UnitTableEntry(fix_scale=1000, rate_unit='V',
                             cumul_scale=2.77778e-07, cumul_unit='Vh',
-                            name='Voltage (RMS)'),
+                            name='Voltage'),
         'I': UnitTableEntry(fix_scale=1000, rate_unit='A',
                             cumul_scale=2.77778e-07, cumul_unit='Ah',
-                            name='Current (RMS)'),
+                            name='Current'),
         'F': UnitTableEntry(fix_scale=1000, rate_unit='Hz',
                             cumul_scale=0.001, cumul_unit='Hz·s',
                             name='Frequency'),
@@ -88,7 +88,7 @@ class Units:
                             cumul_scale=0.001, cumul_unit='%·s',
                             name='Humidity'),
         'Qv': UnitTableEntry(fix_scale=1e+09, rate_unit='m^3/s',
-                             cumul_scale=1e-09, cumul_unit='m^3',
+                             cumul_scale=1e-06, cumul_unit='L',
                              name='Volumetric flow'),
         'Pa': UnitTableEntry(fix_scale=1, rate_unit='Pa',
                              cumul_scale=1, cumul_unit='Pa·s',
@@ -334,6 +334,10 @@ class Units:
             unit='ft', time_dependent=False,
             calc=lambda x, t=None: 3.28083989501312*x,
             inverse=lambda y, t=None: 0.3048*y),
+        'L': ConversionTableEntry(
+            unit='gal', time_dependent=False,
+            calc=lambda x, t=None: 264.200792602378*x,
+            inverse=lambda y, t=None: 0.003785*y),
         'Pa·s': ConversionTableEntry(
             unit='inHg·s', time_dependent=False,
             calc=lambda x, t=None: 0.000295300999981497*x,
