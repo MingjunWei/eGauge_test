@@ -29,3 +29,5 @@
 #
 from .auth import *
 from .error import *
+from . import cloud
+from . import device
