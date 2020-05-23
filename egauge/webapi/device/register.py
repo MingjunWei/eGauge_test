@@ -60,7 +60,7 @@ def regnames_to_ranges(dev, regs):
             ranges.append('%s' % start)
         else:
             ranges.append('%s:%s' % (start, stop))
-    return ','.join(ranges)
+    return '+'.join(ranges)
 
 class Register:
     def __init__(self, dev, params, regs=None, **kwargs):
