@@ -163,6 +163,9 @@ def main():
                         help='Phase temperature coefficient in ppm/\u00b0C.')
     parser.add_argument('-v', '--rated-voltage', nargs=1, type=float,
                         default=[1/3.], help='Rated voltage of CT in Volt.')
+    parser.add_argument('-b', '--bias-voltage', type=float,
+                        default=0, help='Output voltage when no current '
+                        'is flowing through the CD.')
     #
     # Voltage & Linear Temperature Parameters:
     #
@@ -212,6 +215,7 @@ def main():
     # CT parameters:
     table.rated_current = args.rated_current[0]
     table.voltage_at_rated_current = args.rated_voltage[0]
+    table.bias_voltage = args.bias_voltage
     table.phase_at_rated_current = args.phase[0]
     table.voltage_temp_coeff = args.voltage_temp_coeff[0]
     table.phase_temp_coeff = args.phase_temp_coeff[0]

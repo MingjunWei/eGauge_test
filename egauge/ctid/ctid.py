@@ -497,6 +497,7 @@ class Table:
         self.cal_table = {
             1.5: [0, 0], 5: [0, 0], 15: [0, 0], 50: [0, 0]
         }
+        self.bias_voltage = 0
         self.reserved = 0
         self.mfg_info = 0
         self.scale = 0
@@ -539,6 +540,7 @@ class Table:
         if self.sensor_type >= SENSOR_TYPE_AC \
            and self.sensor_type <= SENSOR_TYPE_RC:
             ret += 'size=%.1fmm, serial=%u, current=%.1fA, voltage=%.6fV, ' \
+                   'bias=%.3fmV, ' \
                    'phase=%.2f\u00b0, voltage_temp_coeff=%.0fppm/\u00b0C, ' \
                    'phase_temp_coeff=%.0fppm/\u00b0C, reserved=0x%02x, ' \
                    'mfg_info=0x%02x, Rs=%g, Rl=%g, ' \
@@ -550,6 +552,7 @@ class Table:
                    (self.size,
                     self.serial_number, self.rated_current,
                     self.voltage_at_rated_current,
+                    1e3 * self.bias_voltage,
                     self.phase_at_rated_current,
                     self.voltage_temp_coeff, self.phase_temp_coeff,
                     self.reserved, self.mfg_info, self.r_source, self.r_load,
@@ -759,6 +762,7 @@ class Table:
         for k in sorted(self.cal_table.keys()):
             self.m_s8('cal_table', 0.02, '%', idx1=k, idx2=0)
             self.m_s8('cal_table', 0.02, '\u00b0', idx1=k, idx2=1)
+        self.m_s16('bias_voltage', 1e-6, 'V')
 
     def marshall_params_linear(self):
         '''Linear Parameters (for voltage or linear temperature).'''
