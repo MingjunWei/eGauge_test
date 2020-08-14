@@ -154,7 +154,7 @@ class Register:
             curr_range = self.raw['ranges'][range_idx]
             ts = decimal.Decimal(curr_range['ts'])
             if index < len(curr_range['rows']):
-                ts -= index * curr_range['delta']
+                ts -= index * decimal.Decimal(curr_range['delta'])
                 return self._make_row(ts, curr_range['rows'][index])
             range_idx += 1
             index -= len(curr_range['rows'])
@@ -182,7 +182,7 @@ class Register:
         row = self._make_row(self.iter_ts,
                              curr_range['rows'][self.iter_row_idx])
 
-        self.iter_ts -= curr_range['delta']
+        self.iter_ts -= decimal.Decimal(curr_range['delta'])
         self.iter_row_idx += 1
         if self.iter_row_idx >= len(curr_range['rows']):
             self.iter_row_idx = 0
