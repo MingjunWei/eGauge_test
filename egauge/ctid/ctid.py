@@ -542,7 +542,7 @@ class Table:
             ret += 'size=%.1fmm, serial=%u, current=%.1fA, voltage=%.6fV, ' \
                    'bias=%.3fmV, ' \
                    'phase=%.2f\u00b0, voltage_temp_coeff=%.0fppm/\u00b0C, ' \
-                   'phase_temp_coeff=%.0fppm/\u00b0C, reserved=0x%02x, ' \
+                   'phase_temp_coeff=%.1fm\u00b0/\u00b0C, reserved=0x%02x, ' \
                    'mfg_info=0x%02x, Rs=%g, Rl=%g, ' \
                    'cal={' \
                    '1.5%%: %+.2f%%/%+.2f\u00b0, ' \
@@ -758,7 +758,7 @@ class Table:
         self.m_u16('size', 0.1, 'mm')
         self.m_s12('phase_at_rated_current', 0.01, '\u00b0')
         self.m_s8('voltage_temp_coeff', 5, 'ppm/\u00b0C')
-        self.m_s8('phase_temp_coeff', 5, 'ppm/\u00b0C')
+        self.m_s8('phase_temp_coeff', 0.5, 'm\u00b0/\u00b0C')
         for k in sorted(self.cal_table.keys()):
             self.m_s8('cal_table', 0.02, '%', idx1=k, idx2=0)
             self.m_s8('cal_table', 0.02, '\u00b0', idx1=k, idx2=1)
@@ -840,7 +840,7 @@ class Table:
             self.m_u4_s12('sensor_type', 1, None,
                           'phase_at_rated_current', 0.01, '\u00b0')
             self.m_s8('voltage_temp_coeff', 5, 'ppm/\u00b0C')
-            self.m_s8('phase_temp_coeff', 5, 'ppm/\u00b0C')
+            self.m_s8('phase_temp_coeff', 0.5, 'm\u00b0/\u00b0C')
             for k in sorted(self.cal_table.keys()):
                 self.m_s8('cal_table', 0.02, '%', idx1=k, idx2=0)
                 self.m_s8('cal_table', 0.02, '\u00b0', idx1=k, idx2=1)

@@ -160,7 +160,7 @@ def main():
                         help='Voltage temperature coefficient in ppm/\u00b0C.')
     parser.add_argument('-T', '--phase-temp-coeff', nargs=1, type=float,
                         default=[0],
-                        help='Phase temperature coefficient in ppm/\u00b0C.')
+                        help='Phase temperature coefficient in m\u00b0/\u00b0C.')
     parser.add_argument('-v', '--rated-voltage', nargs=1, type=float,
                         default=[1/3.], help='Rated voltage of CT in Volt.')
     parser.add_argument('-b', '--bias-voltage', type=float,
