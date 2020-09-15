@@ -690,8 +690,8 @@ class Table:
             val = struct.unpack_from(fmt, self._raw_data, self._raw_offset)
             u24 = (val[0] << 16) | val[1]
             self._raw_offset += struct.calcsize(fmt)
-            self.__dict__[name1] = unfloat12((u24 >> 12) & 0xfff)
-            self.__dict__[name2] = unfloat12((u24 >>  0) & 0xfff)
+            self.__dict__[name1] = round(unfloat12((u24 >> 12) & 0xfff))
+            self.__dict__[name2] = round(unfloat12((u24 >>  0) & 0xfff))
 
     def m_u24(self, name, scale=1, unit=None):
         fmt = '>BH'
