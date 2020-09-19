@@ -81,8 +81,9 @@ def post(resource, json_data, **kwargs):
     if r.status_code == 401:
         raise UnauthenticatedError()
     if not 200 <= r.status_code <= 299:
-        log.exception('HTTP status code %s.  Data: %s, keyword args: %s',
-                      r.status_code, json_data, kwargs)
+        log.exception('HTTP status code %s.  '
+                      'Resource %s, Data: %s, keyword args: %s',
+                      r.status_code, resource, json_data, kwargs)
         raise JSONAPIError('Unexpected HTTP status code.', r.status_code)
     try:
         reply = r.json()
