@@ -89,3 +89,25 @@ def post(resource, json_data, **kwargs):
     except ValueError:
         raise JSONAPIError('Invalid JSON data.', e)
     return reply
+
+def delete(resource, **kwargs):
+    '''Issue DELETE request for RESOURCE and return the parsed JSON data
+    or None if the request failed or returned invalid JSON data.
+    Additional keyword arguments are passed on to requests.delete().
+
+    '''
+    try:
+        r = requests.delete(resource, **kwargs)
+    except requests.exceptions.RequestException as e:
+        raise JSONAPIError('requests.delete exception.', e)
+    if r.status_code == 401:
+        raise UnauthenticatedError()
+    if r.status_code < 200 or r.status_code > 299:
+        log.exception('HTTP status code %s.  Keyword args: %s',
+                      r.status_code, kwargs)
+        raise JSONAPIError('Unexpected HTTP status code.', r.status_code)
+    try:
+        reply = r.json()
+    except ValueError as e:
+        raise JSONAPIError('Invalid JSON data.', e)
+    return reply

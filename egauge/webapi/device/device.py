@@ -72,6 +72,16 @@ class Device:
         return json_api.post(self.api_uri + resource, json_data,
                              auth=self.auth, **kwargs)
 
+    def delete(self, resource, **kwargs):
+        '''Issue DELETE request for /api resource RESOURCE and return parsed
+        JSON reply or None if the request failed or returned invalid
+        JSON data.  Additional keyword arguments are passed on to
+        requests.post().
+
+        '''
+        return json_api.delete(self.api_uri + resource,
+                               auth=self.auth, **kwargs)
+
     def _fetch_reg_info(self):
         '''Fetch register info, including type and virtual register
         formulas.'''
