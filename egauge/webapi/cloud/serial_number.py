@@ -78,17 +78,25 @@ class SerialNumber:
         log.debug('post[%s] = %s', resource, reply)
         return reply
 
-    def allocate(self, model_name):
+    def allocate(self, model_name, serial=None):
         '''Return and allocate the next available serial number for model
         MODEL_NAME.  Typically, the MODEL_NAME should be prefixed by
         the manufacturer name to ensure uniqueness.  For example, for
-        eGauge model ECS, MODEL_NAME would be 'eGauge-ECS'.  Once
-        allocated, a serial number cannot be freed again so care
+        eGauge model ETN100, MODEL_NAME would be 'eGauge-ETN100'.
+        Once allocated, a serial number cannot be freed again so care
         should be taken to use all allocated numbers.
 
+        If SERIAL is specified, allocate that specific serial number,
+        if it is avaiable, or fail otherwise.  Specific serial-number
+        allocation may not be allowed for all MODEL_NAMEs.
+
         On error, exception SerialNumberError is raised.
+
         '''
-        reply = self._post('models/allocate/', json_data={'name': model_name})
+        data = {'name': model_name}
+        if serial is not None:
+            data['serial'] = serial
+        reply = self._post('models/allocate/', json_data=data)
         if reply is None:
             raise SerialNumberError('POST to allocate SN failed.', model_name)
         if not 'serial' in reply:
