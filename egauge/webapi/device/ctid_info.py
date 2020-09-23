@@ -40,6 +40,7 @@ from egauge import webapi
 from ..error import Error
 
 def ctid_info_to_table(reply):
+    '''Convert a ctid service REPLY to a CTid table.'''
     t = egauge.ctid.Table()
     t.version = reply.get('version')
     t.mfg_id = reply.get('mfgid')
@@ -81,7 +82,7 @@ def ctid_info_to_table(reply):
 class CTidInfoError(Error):
     '''Raised if for any CTid info related errors.'''
 
-class CTidPortInfo:
+class PortInfo:
     '''Encapsulates the port number on which a CTid table was read, the
     polarity which is was read with, and the table itself.
 
@@ -91,14 +92,87 @@ class CTidPortInfo:
         self.polarity = polarity
         self.table = table
 
+    def port_name(self):
+        '''Return the canonical port name.'''
+        return 'S%d' % self.port
+
+    def short_mfg_name(self):
+        '''Return the short (concise) name of the manufacturer of the sensor
+        or `-' if unknown.
+
+        '''
+        if self.table is None or self.table.mfg_id is None:
+            return '-'
+        return egauge.ctid.mfg_short_name(self.table.mfg_id)
+
+    def model_name(self):
+        '''Return the model name of the sensor attached to the port.  If
+        unknown `-' is returned.
+
+        '''
+        if self.table is None or self.table.model is None:
+            return '-'
+        return self.table.model
+
+    def mfg_model_name(self):
+        '''Return a "fully qualified" model name, which consists of the short
+        version of the manufacter's name, a dash, and the model
+        name.
+
+        '''
+        return '%s-%s' % (self.short_mfg_name(), self.model_name())
+
+    def sn(self):
+        '''Return the serial number or None if unknown.'''
+        if self.table is None or self.table.serial_number is None:
+            return None
+        return self.table.serial_number
+
+    def serial_number(self):
+        '''Return the serial number of the sensor attached to the port as a
+        decimal string.  If unknown, '-' is returned.
+
+        '''
+        if self.table is None or self.table.serial_number is None:
+            return '-'
+        return str(self.table.serial_number)
+
+    def unique_name(self):
+        '''Return a sensor's unique name, which is a string consisting of the
+        manufacturer's short name, the model name, and the serial
+        number, all separated by dashes..
+
+        '''
+        return '%s-%s' % (self.mfg_model_name(), self.serial_number())
+
+    def sensor_type(self):
+        '''Return the sensor type of the sensor attached to the port or None
+        if unknown.
+
+        '''
+        if self.table is None or self.table.sensor_type is None:
+            return None
+        return self.table.sensor_type
+
+    def sensor_type_name(self):
+        '''Return the name of the sensor type of the sensor attached to the
+        port or '-' if unknown.
+
+        '''
+        st = self.sensor_type()
+        if st is None:
+            return '-'
+        return egauge.ctid.get_sensor_type_name(st)
+
     def __str__(self):
         return '(port=%d,polarity=%s,table=%s)' % (self.port, self.polarity,
                                                    self.table)
 
 class CTidInfo:
     def __init__(self, dev):
-        '''Create an object which can be used to read the CTid information of
-        a particular port, scan for such info, flash the attached
+        '''Create an object which can be used to access the CTid service of
+        device DEV.  The service allows reading CTid info from a
+        particular port, scan for such info, flash the attached
         sensor's indicator LED, or iterate over all the ports with
         CTid information.
 
@@ -122,7 +196,9 @@ class CTidInfo:
 
     def scan(self, port_number):
         '''Scan the CTid information from the sensor attached to the specified
-        port_number.
+        PORT_NUMBER and return A PortInfo object as a result.  If no
+        CTid info could be read from the port, the returned object's
+        table member will be None.
 
         '''
         if self.tid is not None:
@@ -144,15 +220,15 @@ class CTidInfo:
                 reply = self.dev.get(resource, params={'tid': self.tid})
                 if reply.get('port') == port_number:
                     if reply.get('tid') == self.tid:
-                        return CTidPortInfo(port_number, polarity,
-                                            ctid_info_to_table(reply))
+                        return PortInfo(port_number, polarity,
+                                        ctid_info_to_table(reply))
                     break
             self.stop()
-        return None
+        return PortInfo(port_number, None, None)
 
     def flash(self, port_number, polarity='-'):
         '''Flash the indicator LED on the sensor attached to the specified
-        port_number using the specified polarity.  Flashing will
+        PORT_NUMBER using the specified POLARITY.  Flashing will
         continue until stop() is called (or until a timeout occurs
         after about 30 minutes).
 
@@ -181,7 +257,7 @@ class CTidInfo:
             raise CTidInfoError('Failed to delete CTid info.', port_number)
 
     def get(self, port_number):
-        '''Get the CTid information stored for the specified port number (if
+        '''Get the CTid information stored for the specified PORT_NUMBER (if
         any).
 
         '''
@@ -194,8 +270,8 @@ class CTidInfo:
         if reply.get('port') != port_number:
             raise CTidInfoError('CTid info has incorrect port number.',
                                 reply.get('port'), port_number)
-        return CTidPortInfo(port_number, reply.get('polarity'),
-                            ctid_info_to_table(reply))
+        return PortInfo(port_number, reply.get('polarity'),
+                        ctid_info_to_table(reply))
 
     def __iter__(self):
         '''Iterate over all available CTid information.'''
@@ -210,7 +286,7 @@ class CTidInfo:
         info = self.info[self.index]
         t = ctid_info_to_table(info)
         self.index += 1
-        return CTidPortInfo(info['port'], info['polarity'], t)
+        return PortInfo(info['port'], info['polarity'], t)
 
 if __name__ == '__main__':
     from . import device
