@@ -60,11 +60,13 @@ def regnames_to_ranges(dev, regs):
             ranges.append('%s' % start)
         else:
             ranges.append('%s:%s' % (start, stop))
+    if len(ranges) < 1:
+        return None
     return '+'.join(ranges)
 
 class Register:
-    def __init__(self, dev, params, regs=None, **kwargs):
-        '''Fetch register data from device DEV.  PARAMS must be a dictionary
+    def __init__(self, dev, params=None, regs=None, **kwargs):
+        '''Fetch register data from device DEV.  PARAMS is a dictionary
         of query parameters that specify the data to return.  If REGS
         is none, all registers are returned.  If not None, it must be
         a list of register names for which data should be returned.
@@ -77,8 +79,12 @@ class Register:
         self.iter_range_idx = None
         self.iter_row_idx = None
         self.iter_ts = None
+        if params is None:
+            params = {}
         if regs is not None:
-            params['reg'] = regnames_to_ranges(dev, regs)
+            reg_ranges = regnames_to_ranges(dev, regs)
+            if reg_ranges is not None:
+                params['reg'] = reg_ranges
         self.raw = self.dev.get('/register', params=params, **kwargs)
         if self.raw is None:
             raise RegisterError('Failed to read register data.', params)
