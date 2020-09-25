@@ -149,11 +149,7 @@ class SerialNumber:
         if 'metadata' not in reply or reply['metadata'] is None:
             log.warning('no metadata exists for SN %s.', sn)
             return {}
-        meta = reply['metadata']
-        # for backwards compability:
-        if 'ctid' not in meta:
-            return {'ctid': meta}
-        return meta
+        return reply['metadata']
 
     def set_metadata(self, model_name, sn, meta):
         '''Set the metadata for model MODEL_NAME and serial-number SN to META.
