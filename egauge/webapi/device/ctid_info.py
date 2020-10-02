@@ -34,14 +34,14 @@ import os
 import secrets
 import time
 
-import egauge.ctid
+from egauge import ctid
 from egauge import webapi
 
 from ..error import Error
 
 def ctid_info_to_table(reply):
     '''Convert a ctid service REPLY to a CTid table.'''
-    t = egauge.ctid.Table()
+    t = ctid.Table()
     t.version = reply.get('version')
     t.mfg_id = reply.get('mfgid')
     t.model = reply.get('model')
@@ -103,7 +103,7 @@ class PortInfo:
         '''
         if self.table is None or self.table.mfg_id is None:
             return '-'
-        return egauge.ctid.mfg_short_name(self.table.mfg_id)
+        return ctid.mfg_short_name(self.table.mfg_id)
 
     def model_name(self):
         '''Return the model name of the sensor attached to the port.  If
@@ -162,7 +162,58 @@ class PortInfo:
         st = self.sensor_type()
         if st is None:
             return '-'
-        return egauge.ctid.get_sensor_type_name(st)
+        return ctid.get_sensor_type_name(st)
+
+    def as_dict(self):
+        '''Return CTid info as a serializable dictionary.'''
+        if self.table == None:
+            return None
+        params = {}
+        p = {
+            'port': self.port,
+            'polarity': self.polarity,
+            'version': self.table.version,
+            'mfgid': self.table.mfg_id,
+            'model': self.table.model,
+            'sn': self.table.serial_number,
+            'k': self.table.sensor_type,
+            'rsrc': self.table.r_source,
+            'rload': self.table.r_load,
+            'params': params
+        }
+        if self.table.sensor_type in [ctid.SENSOR_TYPE_AC, ctid.SENSOR_TYPE_DC,
+                                      ctid.SENSOR_TYPE_RC]:
+            params['size'] = self.table.size
+            params['i'] = self.table.rated_current
+            params['v'] = self.table.voltage_at_rated_current
+            params['a'] = self.table.phase_at_rated_current
+            params['tv'] = self.table.voltage_temp_coeff
+            params['ta'] = self.table.phase_temp_coeff
+            params['bias_voltage'] = self.table.bias_voltage
+            cal_table = {}
+            for l, row in self.table.cal_table.items():
+                cal_table[l] = {'v': row[0], 'a':row[1]}
+            params['cal'] = cal_table
+        elif self.table.sensor_type == ctid.SENSOR_TYPE_VOLTAGE:
+            params['scale'] = self.table.scale
+            params['offset'] = self.table.offset
+            params['delay'] = self.table.delay
+        elif self.table.sensor_type == ctid.SENSOR_TYPE_TEMP_LINEAR:
+            params['scale'] = self.table.scale
+            params['offset'] = self.table.offset
+        elif self.table.sensor_type == ctid.SENSOR_TYPE_TEMP_NTC:
+            params['ntc_a'] = self.table.ntc_a
+            params['ntc_b'] = self.table.ntc_b
+            params['ntc_c'] = self.table.ntc_c
+            params['ntc_m'] = self.table.ntc_m
+            params['ntc_n'] = self.table.ntc_n
+            params['ntc_k'] = self.table.ntc_k
+        elif self.table.sensor_type == ctid.SENSOR_TYPE_TEMP_PULSE:
+            params['threshold'] = self.table.threshold
+            params['hysteresis'] = self.table.hysteresys
+            params['debounce_time'] = self.table.debounce_time
+            params['edge_mask'] = self.table.edge_mask
+        return p
 
     def __str__(self):
         return '(port=%d,polarity=%s,table=%s)' % (self.port, self.polarity,
@@ -272,6 +323,26 @@ class CTidInfo:
                                 reply.get('port'), port_number)
         return PortInfo(port_number, reply.get('polarity'),
                         ctid_info_to_table(reply))
+
+    def put(self, port_info):
+        '''Replace the existing CTid info with the one specified by PORT_INFO,
+        which may be a single PortInfo() object or an array of
+        PortInfo() objects.
+
+        '''
+        if isinstance(port_info, list):
+            resource = '/ctid'
+            data = {
+                'info': [pi.as_dict() for pi in port_info]
+            }
+        else:
+            resource = '/ctid/%d' % port_info['port']
+            data = port_info.as_dict()
+        reply = self.dev.put(resource, json_data=data)
+        if reply is None:
+            raise CTidInfoError('PUT of CTid info failed.')
+        if reply.get('status') != 'OK':
+            raise CTidInfoError('Failure saving CTid info.', reply)
 
     def __iter__(self):
         '''Iterate over all available CTid information.'''

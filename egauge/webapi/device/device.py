@@ -62,11 +62,21 @@ class Device:
         '''
         return json_api.get(self.api_uri + resource, auth=self.auth, **kwargs)
 
+    def put(self, resource, json_data, **kwargs):
+        '''Issue PUT request with JSON_DATA as body to /api resource RESOURCE
+        and return parsed JSON reply or None if the request failed or
+        returned invalid JSON data.  Additional keyword arguments are
+        passed on to requests.put().
+
+        '''
+        return json_api.put(self.api_uri + resource, json_data,
+                            auth=self.auth, **kwargs)
+
     def post(self, resource, json_data, **kwargs):
-        '''Issue POST request for /api resource RESOURCE and return parsed
-        JSON reply or None if the request failed or returned invalid
-        JSON data.  Additional keyword arguments are passed on to
-        requests.post().
+        '''Issue POST request with JSON_DATA as body to /api resource RESOURCE
+        and return parsed JSON reply or None if the request failed or
+        returned invalid JSON data.  Additional keyword arguments are
+        passed on to requests.post().
 
         '''
         return json_api.post(self.api_uri + resource, json_data,

@@ -66,10 +66,39 @@ def get(resource, **kwargs):
         raise JSONAPIError('Invalid JSON data.', e)
     return reply
 
+def put(resource, json_data, **kwargs):
+    '''Issue PUT request with JSON_DATA as body to RESOURCE and return
+    parsed JSON reply or None if the request failed or returned
+    invalid JSON data.  Additional keyword arguments are passed on to
+    requests.post().
+
+    '''
+    headers = kwargs.get('headers', {})
+    headers['Content-Type'] = 'application/json'
+    kwargs['headers'] = headers
+    try:
+        r = requests.put(resource, data=json.dumps(json_data), **kwargs)
+    except requests.exceptions.RequestException as e:
+        raise JSONAPIError('requests.put exception.', e)
+    if r.status_code == 401:
+        raise UnauthenticatedError()
+    if not 200 <= r.status_code <= 299:
+        if log.getEffectiveLevel() <= logging.DEBUG:
+            log.exception('HTTP PUT status code %s.  '
+                          'Resource %s, Data: %s, keyword args: %s',
+                          r.status_code, resource, json_data, kwargs)
+        raise JSONAPIError('Unexpected HTTP status code.', r.status_code)
+    try:
+        reply = r.json()
+    except ValueError:
+        raise JSONAPIError('Invalid JSON data.', e)
+    return reply
+
 def post(resource, json_data, **kwargs):
-    '''Issue POST request for RESOURCE and return parsed JSON reply or
-    None if the request failed or returned invalid JSON data.
-    Additional keyword arguments are passed on to requests.post().
+    '''Issue POST request with JSON_DATA as body to RESOURCE and return
+    parsed JSON reply or None if the request failed or returned
+    invalid JSON data.  Additional keyword arguments are passed on to
+    requests.post().
 
     '''
     headers = kwargs.get('headers', {})
