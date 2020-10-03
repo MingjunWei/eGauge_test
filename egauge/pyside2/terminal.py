@@ -31,7 +31,8 @@
 
 import re
 
-from PyQt4.QtGui import QApplication, QTextCursor
+from PySide2.QtWidgets import QApplication
+from PySide2.QtGui import QCursor, QFont, QTextCursor
 
 from . import ansi2html
 
@@ -172,25 +173,25 @@ if __name__ == '__main__':
     test_incomplete_ansi_csi('s')	# save cursor position
 
     import sys
-    from PyQt4 import QtCore, QtGui
-    from PyQt4.QtCore import Qt, QBasicTimer
-    from PyQt4.QtGui import QApplication, QMainWindow, QMessageBox
+    from PySide2 import QtCore, QtWidgets
+    from PySide2.QtCore import Qt, QBasicTimer
+    from PySide2.QtWidgets import QApplication, QMainWindow, QMessageBox
 
     class Ui_MainWindow:
         def setupUi(self, MainWindow):
             MainWindow.setObjectName('Terminal Test')
             MainWindow.resize(908, 480)
-            self.centralwidget = QtGui.QWidget(MainWindow)
+            self.centralwidget = QtWidgets.QWidget(MainWindow)
             self.centralwidget.setObjectName("centralwidget")
-            self.verticalLayout = QtGui.QVBoxLayout(self.centralwidget)
+            self.verticalLayout = QtWidgets.QVBoxLayout(self.centralwidget)
             self.verticalLayout.setObjectName("verticalLayout")
-            self.plainTextEdit = QtGui.QPlainTextEdit(self.centralwidget)
+            self.plainTextEdit = QtWidgets.QPlainTextEdit(self.centralwidget)
             self.plainTextEdit.setObjectName("plainTextEdit")
-            font = QtGui.QFont('Ubuntu Mono', 12)
+            font = QFont('Ubuntu Mono', 12)
             self.plainTextEdit.setFont(font)
             self.plainTextEdit \
                 .viewport().setProperty('cursor',
-                                        QtGui.QCursor(QtCore.Qt.IBeamCursor))
+                                        QCursor(QtCore.Qt.IBeamCursor))
             self.plainTextEdit.setMouseTracking(False)
             self.plainTextEdit.setFocusPolicy(QtCore.Qt.NoFocus)
             self.plainTextEdit.setAcceptDrops(False)
@@ -199,7 +200,7 @@ if __name__ == '__main__':
                                              'color: white;\n')
             self.plainTextEdit.setLineWidth(1)
             self.plainTextEdit.setUndoRedoEnabled(False)
-            self.plainTextEdit.setLineWrapMode(QtGui.QPlainTextEdit.WidgetWidth)
+            self.plainTextEdit.setLineWrapMode(QtWidgets.QPlainTextEdit.WidgetWidth)
             self.plainTextEdit.setReadOnly(True)
             self.plainTextEdit.setTabStopWidth(80)
             self.plainTextEdit.setCursorWidth(16)
