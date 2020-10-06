@@ -816,38 +816,40 @@ class Table:
     def marshall(self):
         self.m_u8('version')
         self.m_u16('mfg_id')
-        if self.version < 4:
-            self.m_utf8_4('model')
-        else:
-            self.m_utf8_8('model')
-            self.m_u8('reserved')
-        self.m_u24('serial_number')
-        self.m_u8('sensor_type')
         if self.version >= 4:
             # v4 or newer
-            self.m_f12_f12('r_source', u'Ω', 'r_load', u'Ω')
-            self.marshall_params()
-        elif self.version == 3:
-            # v3 or newer
-            self.m_f12_f12('r_source', u'Ω', 'r_load', u'Ω')
+            self.m_utf8_8('model')
             self.m_u8('reserved')
+            self.m_u24('serial_number')
+            self.m_u8('sensor_type')
+            self.m_f12_f12('r_source', u'Ω', 'r_load', u'Ω')
             self.marshall_params()
         else:
-            # v1 or v2
-            self.m_u16('size', 0.1, 'mm')
-            self.m_u16('rated_current', 0.1, 'A')
-            self.m_u16('voltage_at_rated_current', 10e-6, 'V')
-            self.m_u4_s12('sensor_type', 1, None,
-                          'phase_at_rated_current', 0.01, '\u00b0')
-            self.m_s8('voltage_temp_coeff', 5, 'ppm/\u00b0C')
-            self.m_s8('phase_temp_coeff', 0.5, 'm\u00b0/\u00b0C')
-            for k in sorted(self.cal_table.keys()):
-                self.m_s8('cal_table', 0.02, '%', idx1=k, idx2=0)
-                self.m_s8('cal_table', 0.02, '\u00b0', idx1=k, idx2=1)
-            self.m_u8('reserved')
-            self.m_u8('mfg_info')
-            if self.version > 1:
+            self.m_utf8_4('model')
+            if self.version == 3:
+                # v3
+                self.m_u24('serial_number')
+                self.m_u8('sensor_type')
                 self.m_f12_f12('r_source', u'Ω', 'r_load', u'Ω')
+                self.m_u8('reserved')
+                self.marshall_params()
+            else:
+                # v1 or v2
+                self.m_u16('size', 0.1, 'mm')
+                self.m_u24('serial_number')
+                self.m_u16('rated_current', 0.1, 'A')
+                self.m_u16('voltage_at_rated_current', 10e-6, 'V')
+                self.m_u4_s12('sensor_type', 1, None,
+                              'phase_at_rated_current', 0.01, '\u00b0')
+                self.m_s8('voltage_temp_coeff', 5, 'ppm/\u00b0C')
+                self.m_s8('phase_temp_coeff', 0.5, 'm\u00b0/\u00b0C')
+                for k in sorted(self.cal_table.keys()):
+                    self.m_s8('cal_table', 0.02, '%', idx1=k, idx2=0)
+                    self.m_s8('cal_table', 0.02, '\u00b0', idx1=k, idx2=1)
+                self.m_u8('reserved')
+                self.m_u8('mfg_info')
+                if self.version > 1:
+                    self.m_f12_f12('r_source', u'Ω', 'r_load', u'Ω')
 
     def encode(self, version=CTID_VERSION):
         """Encode the table contents and store is as a sequence of bytes in
