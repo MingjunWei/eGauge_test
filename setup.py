@@ -9,10 +9,9 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setuptools.setup(
     name='egauge-python',
-    version='0.4',
+    version='0.4.1',
     packages=setuptools.find_namespace_packages(include='egauge.*'),
-    install_requires=['crcmod', 'intelhex', 'wheel', 'pexpect', 'pyside2',
-                      'requests'],
+    install_requires=['crcmod', 'intelhex', 'wheel', 'pexpect', 'requests'],
     include_package_data=True,
     entry_points={
         'console_scripts': [
