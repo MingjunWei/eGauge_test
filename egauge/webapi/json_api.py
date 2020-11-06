@@ -52,7 +52,7 @@ def get(resource, **kwargs):
     try:
         r = requests.get(resource, **kwargs)
     except requests.exceptions.RequestException as e:
-        raise JSONAPIError('requests.get exception.', e)
+        raise JSONAPIError('requests.get exception.') from e
     if r.status_code == 401:
         raise UnauthenticatedError()
     if r.status_code < 200 or r.status_code > 299:
@@ -63,7 +63,7 @@ def get(resource, **kwargs):
     try:
         reply = r.json()
     except ValueError as e:
-        raise JSONAPIError('Invalid JSON data.', e)
+        raise JSONAPIError('Invalid JSON data.', r.content) from e
     return reply
 
 def put(resource, json_data, **kwargs):
@@ -79,7 +79,7 @@ def put(resource, json_data, **kwargs):
     try:
         r = requests.put(resource, data=json.dumps(json_data), **kwargs)
     except requests.exceptions.RequestException as e:
-        raise JSONAPIError('requests.put exception.', e)
+        raise JSONAPIError('requests.put exception.') from e
     if r.status_code == 401:
         raise UnauthenticatedError()
     if not 200 <= r.status_code <= 299:
@@ -90,8 +90,8 @@ def put(resource, json_data, **kwargs):
         raise JSONAPIError('Unexpected HTTP status code.', r.status_code)
     try:
         reply = r.json()
-    except ValueError:
-        raise JSONAPIError('Invalid JSON data.', e)
+    except ValueError as e:
+        raise JSONAPIError('Invalid JSON data.', r.content) from e
     return reply
 
 def post(resource, json_data, **kwargs):
@@ -107,7 +107,7 @@ def post(resource, json_data, **kwargs):
     try:
         r = requests.post(resource, data=json.dumps(json_data), **kwargs)
     except requests.exceptions.RequestException as e:
-        raise JSONAPIError('requests.post exception.', e)
+        raise JSONAPIError('requests.post exception.') from e
     if r.status_code == 401:
         raise UnauthenticatedError()
     if not 200 <= r.status_code <= 299:
@@ -118,8 +118,8 @@ def post(resource, json_data, **kwargs):
         raise JSONAPIError('Unexpected HTTP status code.', r.status_code)
     try:
         reply = r.json()
-    except ValueError:
-        raise JSONAPIError('Invalid JSON data.', e)
+    except ValueError as e:
+        raise JSONAPIError('Invalid JSON data.', r.content) from e
     return reply
 
 def delete(resource, **kwargs):
@@ -131,7 +131,7 @@ def delete(resource, **kwargs):
     try:
         r = requests.delete(resource, **kwargs)
     except requests.exceptions.RequestException as e:
-        raise JSONAPIError('requests.delete exception.', e)
+        raise JSONAPIError('requests.delete exception.') from e
     if r.status_code == 401:
         raise UnauthenticatedError()
     if r.status_code < 200 or r.status_code > 299:
@@ -142,5 +142,5 @@ def delete(resource, **kwargs):
     try:
         reply = r.json()
     except ValueError as e:
-        raise JSONAPIError('Invalid JSON data.', e)
+        raise JSONAPIError('Invalid JSON data.', r.content) from e
     return reply
