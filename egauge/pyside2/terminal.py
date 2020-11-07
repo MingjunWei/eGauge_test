@@ -187,7 +187,7 @@ if __name__ == '__main__':
             self.verticalLayout.setObjectName("verticalLayout")
             self.plainTextEdit = QtWidgets.QPlainTextEdit(self.centralwidget)
             self.plainTextEdit.setObjectName("plainTextEdit")
-            font = QFont('Ubuntu Mono', 12)
+            font = QFont('Monospace Regular', 12)
             self.plainTextEdit.setFont(font)
             self.plainTextEdit \
                 .viewport().setProperty('cursor',
