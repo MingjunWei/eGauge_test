@@ -63,7 +63,7 @@ def ctid_info_to_table(reply):
         l = float(l_str)
         t.cal_table[l] = [cal_table[l_str].get('v', 0),
                           cal_table[l_str].get('a', 0)]
-    t.bias_voltage = params.get('bias_voltage')
+    t.bias_voltage = params.get('bias_voltage', 0)
     t.scale = params.get('scale')
     t.offset = params.get('offset')
     t.delay = params.get('delay')
