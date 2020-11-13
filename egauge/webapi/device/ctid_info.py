@@ -342,7 +342,7 @@ class CTidInfo:
         if reply is None:
             raise CTidInfoError('PUT of CTid info failed.')
         if reply.get('status') != 'OK':
-            raise CTidInfoError('Failure saving CTid info.', reply)
+            raise CTidInfoError('Failure saving CTid info.', data, reply)
 
     def __iter__(self):
         '''Iterate over all available CTid information.'''
