@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020 eGauge Systems LLC
+# Copyright (c) 2020-2021 eGauge Systems LLC
 #       1644 Conestoga St, Suite 2
 #       Boulder, CO 80301
 #       voice: 720-545-9767
@@ -166,7 +166,7 @@ class PortInfo:
 
     def as_dict(self):
         '''Return CTid info as a serializable dictionary.'''
-        if self.table == None:
+        if self.table is None:
             return None
         params = {}
         p = {
@@ -208,7 +208,7 @@ class PortInfo:
             params['ntc_m'] = self.table.ntc_m
             params['ntc_n'] = self.table.ntc_n
             params['ntc_k'] = self.table.ntc_k
-        elif self.table.sensor_type == ctid.SENSOR_TYPE_TEMP_PULSE:
+        elif self.table.sensor_type == ctid.SENSOR_TYPE_PULSE:
             params['threshold'] = self.table.threshold
             params['hysteresis'] = self.table.hysteresys
             params['debounce_time'] = self.table.debounce_time
@@ -252,6 +252,9 @@ class CTidInfo:
         table member will be None.
 
         '''
+        if port_number < 1:
+            raise CTidInfoError('Invalid port number.', port_number)
+
         if self.tid is not None:
             self.stop()
 
@@ -284,6 +287,8 @@ class CTidInfo:
         after about 30 minutes).
 
         '''
+        if port_number < 1:
+            raise CTidInfoError('Invalid port number.', port_number)
         if self.tid is not None:
             self.stop()
         self._make_tid()
@@ -302,6 +307,8 @@ class CTidInfo:
         number.
 
         '''
+        if port_number < 1:
+            raise CTidInfoError('Invalid port number.', port_number)
         resource = '/ctid/%d' % port_number
         reply = self.dev.delete(resource)
         if reply is None or reply.get('status') != 'OK':
@@ -312,6 +319,8 @@ class CTidInfo:
         any).
 
         '''
+        if port_number < 1:
+            raise CTidInfoError('Invalid port number.', port_number)
         resource = '/ctid/%d' % port_number
         reply = self.dev.get(resource)
         if reply is None:
