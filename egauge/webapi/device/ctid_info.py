@@ -324,7 +324,7 @@ class CTidInfo:
         if self.tid is not None:
             self.stop()
         self._make_tid()
-        data = {'op': 'scan', 'tid': self.tid, 'polarity': polarity}
+        data = {'op': 'flash', 'tid': self.tid, 'polarity': polarity}
         resource = '/ctid/%d' % port_number
         for _ in range(3):
             try:
