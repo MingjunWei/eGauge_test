@@ -264,15 +264,16 @@ class CTidInfo:
         self.port_number =  port_number
         data = {'op': 'scan', 'tid': self.tid, 'polarity': polarity}
         resource = '/ctid/%d' % port_number
+        last_e = None
         for _ in range(3):
             try:
                 reply = self.dev.post(resource, data)
                 if reply.get('status') == 'OK':
                     return
-            except Error:
-                pass
+            except Error as e:
+                last_e = e
         raise CTidInfoError('Failed to initiate CTid scan',
-                            port_number, polarity)
+                            port_number, polarity) from last_e
 
     def scan_result(self):
         '''Attempt to read result from a CTid scan initiated with a call to
@@ -344,7 +345,9 @@ class CTidInfo:
         resource = '/ctid/%d' % port_number
         reply = self.dev.delete(resource)
         if reply is None or reply.get('status') != 'OK':
-            raise CTidInfoError('Failed to delete CTid info.', port_number)
+            reason = reply.get('error') if reply is not None else 'timed out'
+            raise CTidInfoError('Failed to delete CTid info.', port_number,
+                                reason)
 
     def get(self, port_number):
         '''Get the CTid information stored for the specified PORT_NUMBER (if
@@ -402,9 +405,9 @@ class CTidInfo:
 
 if __name__ == '__main__':
     from . import device
-    dut = os.getenv('EGAUGE_DUT')
-    usr = os.getenv('EGAUGE_USR')
-    pwd = os.getenv('EGAUGE_PWD')
+    dut = os.getenv('EGAUGE_DUT') or 'http://1608050004.lan'
+    usr = os.getenv('EGAUGE_USR') or 'owner'
+    pwd = os.getenv('EGAUGE_PWD') or 'default'
     ctid_info = CTidInfo(device.Device(dut, auth=webapi.JWTAuth(usr, pwd)))
     print('SCANNING')
     port_info = ctid_info.scan(port_number=3)
