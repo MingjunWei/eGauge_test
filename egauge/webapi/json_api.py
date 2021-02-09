@@ -141,7 +141,7 @@ def delete(resource, **kwargs):
         if log.getEffectiveLevel() <= logging.DEBUG:
             log.exception('HTTP DELETE status code %s.  Keyword args: %s',
                           r.status_code, kwargs)
-            raise JSONAPIError('Unexpected HTTP status code.', r.status_code)
+        raise JSONAPIError('Unexpected HTTP status code.', r.status_code)
     try:
         reply = r.json()
     except ValueError as e:
