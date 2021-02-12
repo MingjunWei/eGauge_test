@@ -62,7 +62,7 @@ def get(resource, **kwargs):
         if log.getEffectiveLevel() <= logging.DEBUG:
             log.exception('HTTP GET status code %s.  Keyword args: %s',
                           r.status_code, kwargs)
-        raise JSONAPIError('Unexpected HTTP status code.', r.status_code)
+        raise JSONAPIError('Unexpected HTTP status code.', r.status_code, r.content)
     try:
         reply = r.json()
     except ValueError as e:
@@ -90,7 +90,7 @@ def put(resource, json_data, **kwargs):
             log.exception('HTTP PUT status code %s.  '
                           'Resource %s, Data: %s, keyword args: %s',
                           r.status_code, resource, json_data, kwargs)
-        raise JSONAPIError('Unexpected HTTP status code.', r.status_code)
+        raise JSONAPIError('Unexpected HTTP status code.', r.status_code, r.content)
     try:
         reply = r.json()
     except ValueError as e:
@@ -118,7 +118,7 @@ def post(resource, json_data, **kwargs):
             log.exception('HTTP POST status code %s.  '
                           'Resource %s, Data: %s, keyword args: %s',
                           r.status_code, resource, json_data, kwargs)
-        raise JSONAPIError('Unexpected HTTP status code.', r.status_code)
+        raise JSONAPIError('Unexpected HTTP status code.', r.status_code, r.content)
     try:
         reply = r.json()
     except ValueError as e:
@@ -141,7 +141,7 @@ def delete(resource, **kwargs):
         if log.getEffectiveLevel() <= logging.DEBUG:
             log.exception('HTTP DELETE status code %s.  Keyword args: %s',
                           r.status_code, kwargs)
-        raise JSONAPIError('Unexpected HTTP status code.', r.status_code)
+        raise JSONAPIError('Unexpected HTTP status code.', r.status_code, r.content)
     try:
         reply = r.json()
     except ValueError as e:
