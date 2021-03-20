@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2020 eGauge Systems LLC
+# Copyright (c) 2018-2021 eGauge Systems LLC
 # 	1644 Conestoga St, Suite 2
 # 	Boulder, CO 80301
 # 	voice: 720-545-9767
@@ -167,12 +167,15 @@ def main():
                         default=0, help='Output voltage when no current '
                         'is flowing through the CD.')
     #
-    # Voltage & Linear Temperature Parameters:
+    # Linear Parameters:
     #
     parser.add_argument('--scale', type=float, default=None, help='Scale.')
     parser.add_argument('--offset', type=float, default=None, help='Offset.')
     parser.add_argument('--delay', type=float, default=None,
                         help='Signal delay in μs.')
+    parser.add_argument('--unit', type=int, default=0,
+                        help='Physical unit code (0..%d).'
+                        % (len(CTid.SENSOR_UNITS) - 1))
     #
     # NTC Temperature Parameters:
     #
@@ -232,6 +235,8 @@ def main():
         table.offset = args.offset
     if args.delay is not None:
         table.delay = args.delay
+    if args.unit is not None:
+        table.sensor_unit = args.unit
     # NTC parameters:
     if args.ntc_a is not None:
         table.ntc_a = args.ntc_a

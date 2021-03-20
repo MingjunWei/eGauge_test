@@ -33,13 +33,16 @@ import struct
 
 import crcmod
 
+from .bit_stuffer import BitStuffer
+
 CTID_VERSION = 4	# version of CTid Specification this code implements
 START_SYM = 0xff
 
 SENSOR_TYPE_AC = 0x0	# AC-only sensor
 SENSOR_TYPE_DC = 0x1	# DC-capable sensor
 SENSOR_TYPE_RC = 0x2	# differential-output sensor ("Rogowski Coil"...)
-SENSOR_TYPE_VOLTAGE = 0x3
+SENSOR_TYPE_VOLTAGE = 0x3	# DEPRECATED -- use SENSOR_TYPE_LINEAR instead
+SENSOR_TYPE_LINEAR = 0x3
 SENSOR_TYPE_TEMP_LINEAR = 0x4
 SENSOR_TYPE_TEMP_NTC = 0x5
 SENSOR_TYPE_PULSE = 0x6
@@ -62,11 +65,34 @@ SENSOR_TYPE_NAME = [
     'AC',
     'DC',
     'RC',
-    'voltage',
+    'linear',
     'temp',
     'NTC',
     'pulse'
 ]
+
+SENSOR_UNITS = (
+    ('V', 'voltage'),
+    ('A', 'current'),
+    ('Ah', 'charge'),
+    ('W', 'power'),
+    ('var', 'reactive power'),
+    ('VA', 'apparent power'),
+    ('Hz', 'frequency'),
+    ('Ω', 'resistance'),
+    ('°', 'angle'),
+    ('°C', 'temperature'),
+    ('%RH', 'humidity'),
+    ('Pa', 'pressure'),
+    ('g', 'mass'),
+    ('m/s', 'velocity'),
+    ('g/s', 'mass flow'),
+    ('m^3/s', 'volumetric flow'),
+    ('%', 'percentage'),
+    ('ppm', 'parts-per-million'),
+    ('', 'air quality'),
+    ('', 'number')
+)
 
 _START_SYM_ZC_COUNT = 16	# number of zero-crossings in start-symbol
 _CLK_FREQ = 480		# nominal clock frequency of CTid carrier
@@ -132,6 +158,16 @@ def get_sensor_type_name(sensor_type):
     if sensor_type < 0 or sensor_type >= len(SENSOR_TYPE_NAME):
         return None
     return SENSOR_TYPE_NAME[sensor_type]
+
+def get_sensor_unit(unit_code):
+    if 0 <= unit_code < len(SENSOR_UNITS):
+        return SENSOR_UNITS[unit_code][0]
+    return '?'
+
+def get_sensor_unit_desc(unit_code):
+    if 0 <= unit_code < len(SENSOR_UNITS):
+        return SENSOR_UNITS[unit_code][1]
+    return '?'
 
 def time_diff(l, r):
     return l - r
@@ -503,6 +539,7 @@ class Table:
         self.scale = 0
         self.offset = 0
         self.delay = 0
+        self.sensor_unit = 0
         self.threshold = 0
         self.hysteresis = 0
         self.debounce_time = 0
@@ -560,10 +597,10 @@ class Table:
                     self.cal_table[5][0], self.cal_table[5][1],
                     self.cal_table[15][0], self.cal_table[15][1],
                     self.cal_table[50][0], self.cal_table[50][1])
-        elif self.sensor_type == SENSOR_TYPE_VOLTAGE:
-            ret += 'scale=%gV/V offset=%gV delay=%gμs' % (self.scale,
-                                                          self.offset,
-                                                          self.delay)
+        elif self.sensor_type == SENSOR_TYPE_LINEAR:
+            unit = get_sensor_unit(self.sensor_unit)
+            ret += 'scale=%g%s/V offset=%g%s delay=%gμs' \
+                % (self.scale, unit, self.offset, unit, self.delay)
         elif self.sensor_type == SENSOR_TYPE_TEMP_LINEAR:
             ret += 'scale=%g°C/V offset=%g°C' % (self.scale, self.offset)
         elif self.sensor_type == SENSOR_TYPE_TEMP_NTC:
@@ -764,15 +801,16 @@ class Table:
             self.m_s8('cal_table', 0.02, '\u00b0', idx1=k, idx2=1)
         self.m_s16('bias_voltage', 1e-6, 'V')
 
-    def marshall_params_linear(self):
-        '''Linear Parameters (for voltage or linear temperature).'''
+    def marshall_params_basic_linear(self):
+        '''Basic linear Parameters (for linear temp. and generic linear sensors).'''
         self.m_f32('scale')
         self.m_f32('offset')
 
-    def marshall_params_voltage(self):
-        '''Voltage Parameters.'''
-        self.marshall_params_linear()
+    def marshall_params_linear(self):
+        '''Linear Parameters.'''
+        self.marshall_params_basic_linear()
         self.m_s16('delay', .01, 'μs')
+        self.m_u16('sensor_unit')
 
     def marshall_params_ntc(self):
         '''NTC Parameters.'''
@@ -797,10 +835,10 @@ class Table:
         if self.sensor_type >= SENSOR_TYPE_AC \
            and self.sensor_type <= SENSOR_TYPE_RC:
             self.marshall_params_ct()
-        elif self.sensor_type == SENSOR_TYPE_VOLTAGE:
-            self.marshall_params_voltage()
-        elif self.sensor_type == SENSOR_TYPE_TEMP_LINEAR:
+        elif self.sensor_type == SENSOR_TYPE_LINEAR:
             self.marshall_params_linear()
+        elif self.sensor_type == SENSOR_TYPE_TEMP_LINEAR:
+            self.marshall_params_basic_linear()
         elif self.sensor_type == SENSOR_TYPE_TEMP_NTC:
             self.marshall_params_ntc()
         elif self.sensor_type == SENSOR_TYPE_PULSE:
@@ -896,49 +934,12 @@ class Table:
         self._raw_offset = 0
         self.marshall()
 
-class Bit_Stuffer:
-
-    def __init__(self, header=b''):
-        self.run_length = 0	# current length of run of 1 bits
-        self.output = header
-        self.out_byte = 0x00
-        self.out_mask = 0x80
-
-    def shift(self):
-        self.out_mask >>= 1
-        if self.out_mask == 0:
-            self.output += bytes((self.out_byte, ))
-            self.out_byte = 0x00
-            self.out_mask = 0x80
-
-    def append(self, byte):
-        mask = 0x80
-        while mask != 0:
-            if byte & mask:
-                self.out_byte |= self.out_mask
-                self.run_length += 1
-                if self.run_length >= 7:
-                    self.shift()
-                    self.run_length = 0
-            else:
-                self.run_length = 0
-            self.shift()
-            mask >>= 1
-
-    def finish(self):
-        while self.out_mask != 0x80:
-            self.shift()
-
-    def get_output(self):
-        self.finish()
-        return self.output
-
 def bitstuff(data):
     """Apply bit-stuffing to the data and return the result, prefixed with
     the start symbol.
 
     """
-    bs = Bit_Stuffer(bytes((START_SYM, )))
+    bs = BitStuffer(bytes((START_SYM, )))
     for b in data:
         bs.append(b)
     return bs.get_output()
