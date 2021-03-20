@@ -38,7 +38,10 @@ from .error import Error
 log = logging.getLogger(__name__)
 
 class JSONAPIError(Error):
-    '''Raised if for any JSON API errors.'''
+    '''Raised if for any JSON API errors.  The first argument to this
+    exception is the 401 response received from the web server.
+
+    '''
 
 class UnauthenticatedError(Error):
     '''Raised when a request fails with HTTP status code 401.'''
@@ -54,12 +57,12 @@ def get(resource, **kwargs):
     except requests.exceptions.RequestException as e:
         raise JSONAPIError('requests.get exception.') from e
     if r.status_code == 401:
-        raise UnauthenticatedError()
+        raise UnauthenticatedError(r)
     if r.status_code < 200 or r.status_code > 299:
         if log.getEffectiveLevel() <= logging.DEBUG:
             log.exception('HTTP GET status code %s.  Keyword args: %s',
                           r.status_code, kwargs)
-        raise JSONAPIError('Unexpected HTTP status code.', r.status_code)
+        raise JSONAPIError('Unexpected HTTP status code.', r.status_code, r.content)
     try:
         reply = r.json()
     except ValueError as e:
@@ -81,13 +84,13 @@ def put(resource, json_data, **kwargs):
     except requests.exceptions.RequestException as e:
         raise JSONAPIError('requests.put exception.') from e
     if r.status_code == 401:
-        raise UnauthenticatedError()
+        raise UnauthenticatedError(r)
     if not 200 <= r.status_code <= 299:
         if log.getEffectiveLevel() <= logging.DEBUG:
             log.exception('HTTP PUT status code %s.  '
                           'Resource %s, Data: %s, keyword args: %s',
                           r.status_code, resource, json_data, kwargs)
-        raise JSONAPIError('Unexpected HTTP status code.', r.status_code)
+        raise JSONAPIError('Unexpected HTTP status code.', r.status_code, r.content)
     try:
         reply = r.json()
     except ValueError as e:
@@ -109,13 +112,13 @@ def post(resource, json_data, **kwargs):
     except requests.exceptions.RequestException as e:
         raise JSONAPIError('requests.post exception.') from e
     if r.status_code == 401:
-        raise UnauthenticatedError()
+        raise UnauthenticatedError(r)
     if not 200 <= r.status_code <= 299:
         if log.getEffectiveLevel() <= logging.DEBUG:
             log.exception('HTTP POST status code %s.  '
                           'Resource %s, Data: %s, keyword args: %s',
                           r.status_code, resource, json_data, kwargs)
-        raise JSONAPIError('Unexpected HTTP status code.', r.status_code)
+        raise JSONAPIError('Unexpected HTTP status code.', r.status_code, r.content)
     try:
         reply = r.json()
     except ValueError as e:
@@ -133,12 +136,12 @@ def delete(resource, **kwargs):
     except requests.exceptions.RequestException as e:
         raise JSONAPIError('requests.delete exception.') from e
     if r.status_code == 401:
-        raise UnauthenticatedError()
+        raise UnauthenticatedError(r)
     if r.status_code < 200 or r.status_code > 299:
         if log.getEffectiveLevel() <= logging.DEBUG:
             log.exception('HTTP DELETE status code %s.  Keyword args: %s',
                           r.status_code, kwargs)
-            raise JSONAPIError('Unexpected HTTP status code.', r.status_code)
+        raise JSONAPIError('Unexpected HTTP status code.', r.status_code, r.content)
     try:
         reply = r.json()
     except ValueError as e:

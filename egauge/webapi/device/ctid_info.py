@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020 eGauge Systems LLC
+# Copyright (c) 2020-2021 eGauge Systems LLC
 #       1644 Conestoga St, Suite 2
 #       Boulder, CO 80301
 #       voice: 720-545-9767
@@ -30,6 +30,7 @@
 '''This module provides access to the eGauge WebAPI's /api/ctid
 service.'''
 
+import datetime
 import os
 import secrets
 import time
@@ -38,6 +39,8 @@ from egauge import ctid
 from egauge import webapi
 
 from ..error import Error
+
+SCAN_TIMEOUT = 2.5	# scan timeout in seconds
 
 def ctid_info_to_table(reply):
     '''Convert a ctid service REPLY to a CTid table.'''
@@ -166,7 +169,7 @@ class PortInfo:
 
     def as_dict(self):
         '''Return CTid info as a serializable dictionary.'''
-        if self.table == None:
+        if self.table is None:
             return None
         params = {}
         p = {
@@ -208,7 +211,7 @@ class PortInfo:
             params['ntc_m'] = self.table.ntc_m
             params['ntc_n'] = self.table.ntc_n
             params['ntc_k'] = self.table.ntc_k
-        elif self.table.sensor_type == ctid.SENSOR_TYPE_TEMP_PULSE:
+        elif self.table.sensor_type == ctid.SENSOR_TYPE_PULSE:
             params['threshold'] = self.table.threshold
             params['hysteresis'] = self.table.hysteresys
             params['debounce_time'] = self.table.debounce_time
@@ -232,6 +235,8 @@ class CTidInfo:
         self.tid = None
         self.info = None
         self.index = None
+        self.polarity = None
+        self.port_number = None
 
     def _make_tid(self):
         '''Create a random transaction ID.'''
@@ -245,6 +250,47 @@ class CTidInfo:
             self.dev.post('/ctid/stop', {})
         self.tid = None
 
+    def scan_start(self, port_number, polarity):
+        '''Initiate a CTid scan of PORT_NUMBER with POLARITY.  POLARITY must
+        be either "+" or "-".
+
+        '''
+        if port_number < 1:
+            raise CTidInfoError('Invalid port number.', port_number)
+        if self.tid is not None:
+            self.stop()
+        self._make_tid()
+        self.polarity = polarity
+        self.port_number =  port_number
+        data = {'op': 'scan', 'tid': self.tid, 'polarity': polarity}
+        resource = '/ctid/%d' % port_number
+        last_e = None
+        for _ in range(3):
+            try:
+                reply = self.dev.post(resource, data)
+                if reply.get('status') == 'OK':
+                    return
+            except Error as e:
+                last_e = e
+        raise CTidInfoError('Failed to initiate CTid scan',
+                            port_number, polarity) from last_e
+
+    def scan_result(self):
+        '''Attempt to read result from a CTid scan initiated with a call to
+        scan_start().  If the result is not available, None is
+        returned.  If None is returned, the caller should wait a
+        little and then retry the request again for up to SCAN_TIMEOUT
+        seconds.
+
+        '''
+        resource = '/ctid/%d' % self.port_number
+        reply = self.dev.get(resource, params={'tid': self.tid})
+        if reply.get('port') == self.port_number \
+           and reply.get('tid') == self.tid:
+            return PortInfo(self.port_number, self.polarity,
+                            ctid_info_to_table(reply))
+        return None
+
     def scan(self, port_number):
         '''Scan the CTid information from the sensor attached to the specified
         PORT_NUMBER and return A PortInfo object as a result.  If no
@@ -252,27 +298,17 @@ class CTidInfo:
         table member will be None.
 
         '''
-        if self.tid is not None:
-            self.stop()
-
         for polarity in ['+', '-']:
-            self._make_tid()
-            data = {'op': 'scan', 'tid': self.tid, 'polarity': polarity}
-            resource = '/ctid/%d' % port_number
-            for _ in range(3):
-                try:
-                    reply = self.dev.post(resource, data)
-                    if reply.get('status') == 'OK':
-                        break
-                except Error:
-                    pass
-            for _ in range(20):
+            self.scan_start(port_number, polarity)
+
+            start_time = datetime.datetime.now()
+            while True:
                 time.sleep(.25)
-                reply = self.dev.get(resource, params={'tid': self.tid})
-                if reply.get('port') == port_number:
-                    if reply.get('tid') == self.tid:
-                        return PortInfo(port_number, polarity,
-                                        ctid_info_to_table(reply))
+                result = self.scan_result()
+                if result is not None:
+                    return result
+                elapsed = (datetime.datetime.now() - start_time).total_seconds()
+                if elapsed > SCAN_TIMEOUT:
                     break
             self.stop()
         return PortInfo(port_number, None, None)
@@ -284,10 +320,12 @@ class CTidInfo:
         after about 30 minutes).
 
         '''
+        if port_number < 1:
+            raise CTidInfoError('Invalid port number.', port_number)
         if self.tid is not None:
             self.stop()
         self._make_tid()
-        data = {'op': 'scan', 'tid': self.tid, 'polarity': polarity}
+        data = {'op': 'flash', 'tid': self.tid, 'polarity': polarity}
         resource = '/ctid/%d' % port_number
         for _ in range(3):
             try:
@@ -302,16 +340,22 @@ class CTidInfo:
         number.
 
         '''
+        if port_number < 1:
+            raise CTidInfoError('Invalid port number.', port_number)
         resource = '/ctid/%d' % port_number
         reply = self.dev.delete(resource)
         if reply is None or reply.get('status') != 'OK':
-            raise CTidInfoError('Failed to delete CTid info.', port_number)
+            reason = reply.get('error') if reply is not None else 'timed out'
+            raise CTidInfoError('Failed to delete CTid info.', port_number,
+                                reason)
 
     def get(self, port_number):
         '''Get the CTid information stored for the specified PORT_NUMBER (if
         any).
 
         '''
+        if port_number < 1:
+            raise CTidInfoError('Invalid port number.', port_number)
         resource = '/ctid/%d' % port_number
         reply = self.dev.get(resource)
         if reply is None:
@@ -361,9 +405,9 @@ class CTidInfo:
 
 if __name__ == '__main__':
     from . import device
-    dut = os.getenv('EGAUGE_DUT')
-    usr = os.getenv('EGAUGE_USR')
-    pwd = os.getenv('EGAUGE_PWD')
+    dut = os.getenv('EGAUGE_DUT') or 'http://1608050004.lan'
+    usr = os.getenv('EGAUGE_USR') or 'owner'
+    pwd = os.getenv('EGAUGE_PWD') or 'default'
     ctid_info = CTidInfo(device.Device(dut, auth=webapi.JWTAuth(usr, pwd)))
     print('SCANNING')
     port_info = ctid_info.scan(port_number=3)
