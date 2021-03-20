@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2016-2017, 2019-2020 eGauge Systems LLC
+# Copyright (c) 2016-2017, 2019-2021 eGauge Systems LLC
 # 	1644 Conestoga St, Suite 2
 # 	Boulder, CO 80301
 # 	voice: 720-545-9767
@@ -259,15 +259,15 @@ class Window:
 class ByteDecoder:
 
     def __init__(self):
-        self.reset()
-
-    def reset(self):
         self.num_bits = 0
         self.val = 0
         self.edge_count = 0
         self.run_length = 0
         self.start_ts = None
         self.decoded_byte = None
+
+    def reset(self):
+        self.__init__()
 
     def timed_out(self, period, now):
         if self.start_ts is None:
@@ -866,7 +866,9 @@ class Table:
         try:
             self.marshall()
         except KeyError as e:
-            raise Error('Required parameter missing from CTid table.', e)
+            raise Error('Required parameter missing from CTid table.') from e
+        except struct.error as e:
+            raise Error('CTid table parameter has an invalid value.') from e
         if self.version == 1:
             # v1 used an 8-bit CRC
             self._raw_data += struct.pack('>B', crc8_rohc(self._raw_data))
