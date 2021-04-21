@@ -135,7 +135,11 @@ class JWTAuth(requests.auth.AuthBase):
 
         url = urlparse(r.request.url)
         login_uri = url.scheme + '://' + url.netloc + '/api/auth/login'
-        auth_reply = json_api.post(login_uri, data, timeout=60)
+        verify = kwargs.get('verify', True)
+        auth_reply = json_api.post(login_uri,
+                                   data,
+                                   timeout=60,
+                                   verify=verify)
 
         if auth_reply is None:
             return r
@@ -205,7 +209,11 @@ class TokenAuth(requests.auth.AuthBase):
         url = urlparse(r.request.url)
         login_uri = 'https://' + url.netloc + '/v1/api-token-auth/'
         creds = {'username': usr, 'password': pwd}
-        auth_reply = requests.post(login_uri, data=creds, timeout=60).json()
+        verify = kwargs.get('verify', True)
+        auth_reply = requests.post(login_uri,
+                                   data=creds,
+                                   timeout=60,
+                                   verify=verify).json()
 
         if auth_reply is None:
             return r
