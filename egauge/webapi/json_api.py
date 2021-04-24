@@ -55,7 +55,7 @@ def get(resource, **kwargs):
     try:
         r = requests.get(resource, **kwargs)
     except requests.exceptions.RequestException as e:
-        raise JSONAPIError('requests.get exception.') from e
+        raise JSONAPIError('requests.get exception.', e) from e
     if r.status_code == 401:
         raise UnauthenticatedError(r)
     if r.status_code < 200 or r.status_code > 299:
@@ -82,7 +82,7 @@ def put(resource, json_data, **kwargs):
     try:
         r = requests.put(resource, data=json.dumps(json_data), **kwargs)
     except requests.exceptions.RequestException as e:
-        raise JSONAPIError('requests.put exception.') from e
+        raise JSONAPIError('requests.put exception.', e) from e
     if r.status_code == 401:
         raise UnauthenticatedError(r)
     if not 200 <= r.status_code <= 299:
@@ -110,7 +110,7 @@ def post(resource, json_data, **kwargs):
     try:
         r = requests.post(resource, data=json.dumps(json_data), **kwargs)
     except requests.exceptions.RequestException as e:
-        raise JSONAPIError('requests.post exception.') from e
+        raise JSONAPIError('requests.post exception.', e) from e
     if r.status_code == 401:
         raise UnauthenticatedError(r)
     if not 200 <= r.status_code <= 299:
@@ -134,7 +134,7 @@ def delete(resource, **kwargs):
     try:
         r = requests.delete(resource, **kwargs)
     except requests.exceptions.RequestException as e:
-        raise JSONAPIError('requests.delete exception.') from e
+        raise JSONAPIError('requests.delete exception.', e) from e
     if r.status_code == 401:
         raise UnauthenticatedError(r)
     if r.status_code < 200 or r.status_code > 299:
