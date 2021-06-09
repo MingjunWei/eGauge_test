@@ -63,8 +63,10 @@ def get(resource, **kwargs):
             log.exception('HTTP GET status code %s.  Keyword args: %s',
                           r.status_code, kwargs)
         raise JSONAPIError('Unexpected HTTP status code.', r.status_code, r.content)
+    reply = None
     try:
-        reply = r.json()
+        if r.text:
+            reply = r.json()
     except ValueError as e:
         raise JSONAPIError('Invalid JSON data.', r.content) from e
     return reply
@@ -91,8 +93,10 @@ def put(resource, json_data, **kwargs):
                           'Resource %s, Data: %s, keyword args: %s',
                           r.status_code, resource, json_data, kwargs)
         raise JSONAPIError('Unexpected HTTP status code.', r.status_code, r.content)
+    reply = None
     try:
-        reply = r.json()
+        if r.text:
+            reply = r.json()
     except ValueError as e:
         raise JSONAPIError('Invalid JSON data.', r.content) from e
     return reply
@@ -119,8 +123,10 @@ def post(resource, json_data, **kwargs):
                           'Resource %s, Data: %s, keyword args: %s',
                           r.status_code, resource, json_data, kwargs)
         raise JSONAPIError('Unexpected HTTP status code.', r.status_code, r.content)
+    reply = None
     try:
-        reply = r.json()
+        if r.text:
+            reply = r.json()
     except ValueError as e:
         raise JSONAPIError('Invalid JSON data.', r.content) from e
     return reply
@@ -142,8 +148,10 @@ def delete(resource, **kwargs):
             log.exception('HTTP DELETE status code %s.  Keyword args: %s',
                           r.status_code, kwargs)
         raise JSONAPIError('Unexpected HTTP status code.', r.status_code, r.content)
+    reply = None
     try:
-        reply = r.json()
+        if r.text:
+            reply = r.json()
     except ValueError as e:
         raise JSONAPIError('Invalid JSON data.', r.content) from e
     return reply
