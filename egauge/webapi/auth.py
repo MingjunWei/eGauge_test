@@ -163,7 +163,8 @@ class TokenAuth(requests.auth.AuthBase):
 
     '''
 
-    def __init__(self, username=None, password=None, ask=None):
+    def __init__(self, username=None, password=None, ask=None,
+                 token_service_url='https://api.egauge.net/v1/api-token-auth/'):
         self.username = username
         self.password = password
         self.ask_credentials = ask
@@ -207,10 +208,9 @@ class TokenAuth(requests.auth.AuthBase):
             [usr, pwd] = credentials
 
         url = urlparse(r.request.url)
-        login_uri = 'https://api.egauge.net/v1/api-token-auth/'
         creds = {'username': usr, 'password': pwd}
         verify = kwargs.get('verify', True)
-        auth_reply = requests.post(login_uri,
+        auth_reply = requests.post(token_service_url,
                                    data=creds,
                                    timeout=60,
                                    verify=verify).json()
