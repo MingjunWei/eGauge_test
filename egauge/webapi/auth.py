@@ -207,7 +207,7 @@ class TokenAuth(requests.auth.AuthBase):
             [usr, pwd] = credentials
 
         url = urlparse(r.request.url)
-        login_uri = 'https://' + url.netloc + '/api/v1/api-token-auth/'
+        login_uri = 'https://api.egauge.net/v1/api-token-auth/'
         creds = {'username': usr, 'password': pwd}
         verify = kwargs.get('verify', True)
         auth_reply = requests.post(login_uri,
