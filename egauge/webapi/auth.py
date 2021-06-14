@@ -171,6 +171,7 @@ class TokenAuth(requests.auth.AuthBase):
         self.token_file = os.path.join(os.path.join(os.getenv('HOME'),
                                                     '.egauge_api_token'))
         self.token = None
+        self.token_service_url = token_service_url
         try:
             with open(self.token_file, 'r') as f:
                 self.token = f.read().rstrip()
@@ -210,7 +211,7 @@ class TokenAuth(requests.auth.AuthBase):
         url = urlparse(r.request.url)
         creds = {'username': usr, 'password': pwd}
         verify = kwargs.get('verify', True)
-        auth_reply = requests.post(token_service_url,
+        auth_reply = requests.post(self.token_service_url,
                                    data=creds,
                                    timeout=60,
                                    verify=verify).json()
