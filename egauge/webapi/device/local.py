@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020 eGauge Systems LLC
+# Copyright (c) 2020-2021 eGauge Systems LLC
 #       1644 Conestoga St, Suite 2
 #       Boulder, CO 80301
 #       voice: 720-545-9767
@@ -107,7 +107,10 @@ class Local:
         if self.raw is None:
             return None
         try:
-            return self.raw[section][sensor_name]['rate'][measurement]
+            m = self.raw[section][sensor_name]['rate']
+            if section == Local.SECTION_VALUES:
+                return m[measurement]
+            return m
         except KeyError:
             pass
         return None
@@ -124,7 +127,10 @@ class Local:
         if self.raw is None:
             return None
         try:
-            return int(self.raw[section][sensor_name]['cumul'][measurement])
+            m = self.raw[section][sensor_name]['cumul']
+            if section == Local.SECTION_VALUES:
+                return int(m[measurement])
+            return int(m)
         except KeyError:
             pass
         return None
@@ -145,7 +151,9 @@ class Local:
             if metric == Local.METRIC_TYPE:
                 val = metrics[metric]
             else:
-                val = metrics[metric][measurement]
+                val = metrics[metric]
+                if section == Local.SECTION_VALUES:
+                    val = val[measurement]
                 if metric == Local.METRIC_CUMUL:
                     val = int(val)	# convert from decimal string to integer
             regs[key] = val
