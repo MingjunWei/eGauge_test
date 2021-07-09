@@ -32,7 +32,7 @@
 import re
 
 from PySide2.QtWidgets import QApplication
-from PySide2.QtGui import QCursor, QFont, QTextCursor
+from PySide2.QtGui import QCursor, QTextCursor
 
 from . import ansi2html
 
@@ -141,6 +141,8 @@ class Terminal:
                 # Unfortunately, the "<pre>" seems to for the font to
                 # "Courier New" but without "<pre>" whitespace is not
                 # preserved by insertHtml.  Argh...
+                # Use qt5ct to configure the "Fixed width" font which will
+                # be used for <pre>.
                 html = '<pre>' + ansi2html.convert(txt) + '</pre>'
                 cursor.insertHtml(html)
             if back_space:
@@ -187,16 +189,13 @@ if __name__ == '__main__':
             self.verticalLayout.setObjectName("verticalLayout")
             self.plainTextEdit = QtWidgets.QPlainTextEdit(self.centralwidget)
             self.plainTextEdit.setObjectName("plainTextEdit")
-            font = QFont('Monospace Regular', 12)
-            self.plainTextEdit.setFont(font)
             self.plainTextEdit \
                 .viewport().setProperty('cursor',
                                         QCursor(QtCore.Qt.IBeamCursor))
             self.plainTextEdit.setMouseTracking(False)
             self.plainTextEdit.setFocusPolicy(QtCore.Qt.NoFocus)
             self.plainTextEdit.setAcceptDrops(False)
-            self.plainTextEdit.setStyleSheet('font-family: "Ubuntu Mono", monospace;\n'
-                                             'background-color: black;\n'
+            self.plainTextEdit.setStyleSheet('background-color: black;\n'
                                              'color: white;\n')
             self.plainTextEdit.setLineWidth(1)
             self.plainTextEdit.setUndoRedoEnabled(False)
