@@ -69,10 +69,12 @@ class Credentials_Manager:
         fail_msg = ''
         if self.previous_login_failed:
             fail_msg = 'Login failed.  '
-        print('%sPlease enter eGuard credentials '
-              '(append 2FA token to password, if needed).' % fail_msg)
-        usr = input('Username: ')
-        pwd = getpass.getpass()
+        print('%sPlease enter eGuard credentials.' % fail_msg)
+        try:
+            usr = input('Username: ')
+            pwd = getpass.getpass(prompt='Password[+token]: ')
+        except (KeyboardInterrupt, EOFError) as e:
+            raise LoginCanceled from e
         return [usr, pwd]
 
 class Credentials_Dialog(QDialog, Ui_Credentials_Dialog):
