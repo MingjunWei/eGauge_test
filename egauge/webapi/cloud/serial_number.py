@@ -134,6 +134,27 @@ class SerialNumber:
             return False
         return reply['name'] == model_name
 
+    def get_devices(self, model_name=None, dev_filter=None):
+        '''Return a list of devices.  If MODEL_NAME is not None, only devices
+        with that model name are returned.  If DEV_FILTER is not None,
+        only devices matching the filter are returned.
+
+        '''
+        resource = 'devices/'
+        if model_name is not None:
+            quoted_model = urllib.parse.quote(model_name, safe='')
+            resource += quoted_model + '/'
+
+        if dev_filter is not None:
+            resource += '?' + dev_filter
+
+        reply = self._get(resource)
+        if reply is None:
+            raise SerialNumberError('Failed to get metadata.',
+                                    model_name, dev_filter)
+        return reply
+
+
     def get_metadata(self, model_name, sn):
         '''Return the JSON-blob metadata for model MODEL_NAME and
         serial-number SN.
