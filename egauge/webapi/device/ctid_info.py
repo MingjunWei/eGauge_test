@@ -291,15 +291,24 @@ class CTidInfo:
                             ctid_info_to_table(reply))
         return None
 
-    def scan(self, port_number):
+    def scan(self, port_number, polarity=None, timeout=SCAN_TIMEOUT):
         '''Scan the CTid information from the sensor attached to the specified
-        PORT_NUMBER and return A PortInfo object as a result.  If no
+        PORT_NUMBER and return a PortInfo object as a result.  If no
         CTid info could be read from the port, the returned object's
-        table member will be None.
+        table member will be None.  If POLARITY is unspecifed, normal
+        (positive) polarity will be attempted first and, if that
+        fails, negative polarity will be attempted second.  If
+        POLARITY is specified, it should be '+' to scan with normal
+        polarity only or '-' to scan with reversed polarity only.  If
+        TIMEOUT is unspecified, the operation will time out after
+        SCAN_TIMEOUT seconds.  Otherwise, TIMEOUT should be a positive
+        number specifying the number of seconds after which to time
+        out the operation.
 
         '''
-        for polarity in ['+', '-']:
-            self.scan_start(port_number, polarity)
+        polarity_list = ['+', '-'] if polarity is None else [polarity]
+        for pol in polarity_list:
+            self.scan_start(port_number, pol)
 
             start_time = datetime.datetime.now()
             while True:
@@ -308,7 +317,7 @@ class CTidInfo:
                 if result is not None:
                     return result
                 elapsed = (datetime.datetime.now() - start_time).total_seconds()
-                if elapsed > SCAN_TIMEOUT:
+                if elapsed > timeout:
                     break
             self.stop()
         return PortInfo(port_number, None, None)
