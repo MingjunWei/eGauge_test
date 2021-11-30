@@ -51,8 +51,6 @@ class Local:
     SPEC_L2_L3 = 'L23'
     SPEC_L3_L1 = 'L31'
     SPEC_LDC = 'Ldc'
-    #   For t=...:
-    SPEC_TEMP_PCB = 'PCB'
 
     # Sensor names as they appear in the output:
     NAME_L1 = 'L1'
@@ -63,6 +61,7 @@ class Local:
     NAME_L3_L1 = 'L3-L1'
     NAME_LDC = 'Ldc'
     NAME_TEMP_PCB = 'Tpcb'
+    NAME_HUMID_PCB = 'Hpcb'
 
     METRIC_RATE = 'rate'
     METRIC_CUMUL = 'cumul'
