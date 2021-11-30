@@ -103,6 +103,12 @@ class Register:
             return None
         return decimal.Decimal(self.raw['ts'])
 
+    def have(self, reg):
+        '''Return True if register REG exists, False otherwise.'''
+        if self.regorder is None:
+            self._create_regorder()
+        return reg in self.regorder
+
     def rate(self, reg):
         '''Return the rate of change value of the register REG.'''
         if self.raw is None:
