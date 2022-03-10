@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020 eGauge Systems LLC
+# Copyright (c) 2020-2022 eGauge Systems LLC
 #       1644 Conestoga St, Suite 2
 #       Boulder, CO 80301
 #       voice: 720-545-9767
@@ -75,14 +75,14 @@ def put(resource, json_data, **kwargs):
     '''Issue PUT request with JSON_DATA as body to RESOURCE and return
     parsed JSON reply or None if the request failed or returned
     invalid JSON data.  Additional keyword arguments are passed on to
-    requests.post().
+    requests.put().
 
     '''
     headers = kwargs.get('headers', {})
     headers['Content-Type'] = 'application/json'
     kwargs['headers'] = headers
     try:
-        r = requests.put(resource, data=json.dumps(json_data), **kwargs)
+        r = requests.put(resource, json=json_data, **kwargs)
     except requests.exceptions.RequestException as e:
         raise JSONAPIError('requests.put exception.', e) from e
     if r.status_code == 401:
@@ -112,7 +112,7 @@ def post(resource, json_data, **kwargs):
     headers['Content-Type'] = 'application/json'
     kwargs['headers'] = headers
     try:
-        r = requests.post(resource, data=json.dumps(json_data), **kwargs)
+        r = requests.post(resource, json=json_data, **kwargs)
     except requests.exceptions.RequestException as e:
         raise JSONAPIError('requests.post exception.', e) from e
     if r.status_code == 401:
