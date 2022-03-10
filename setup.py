@@ -11,7 +11,8 @@ setuptools.setup(
     name='egauge-python',
     version='0.5.4',
     packages=setuptools.find_namespace_packages(include='egauge.*'),
-    install_requires=['crcmod', 'intelhex', 'wheel', 'pexpect', 'requests'],
+    install_requires=['crcmod', 'intelhex', 'wheel', 'pexpect',
+                      'requests>=2.4.2'],
     include_package_data=True,
     entry_points={
         'console_scripts': [

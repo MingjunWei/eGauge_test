@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020 eGauge Systems LLC
+# Copyright (c) 2020-2022 eGauge Systems LLC
 #       1644 Conestoga St, Suite 2
 #       Boulder, CO 80301
 #       voice: 720-545-9767
@@ -212,7 +212,7 @@ class TokenAuth(requests.auth.AuthBase):
         creds = {'username': usr, 'password': pwd}
         verify = kwargs.get('verify', True)
         auth_reply = requests.post(self.token_service_url,
-                                   data=creds,
+                                   json=creds,
                                    timeout=60,
                                    verify=verify).json()
 
