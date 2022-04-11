@@ -100,9 +100,7 @@ class Terminal:
             self.partial_line = '\r'
             string = string[:-1]
 
-        # Each appendHtml() writes a separate line.  Newline characters
-        # are ignored.
-        lines = split_keepends(string, re.compile('(\r\n|\r|\b)'))
+        lines = split_keepends(string, re.compile('(\r\n|\n|\r|\b)'))
         for line in lines:
             # position cursor at end of text (in case someone clicked in
             # the middle of the text):
@@ -149,6 +147,8 @@ class Terminal:
                 cursor.deletePreviousChar()
                 QApplication.processEvents()
             elif line_feed:
+                # Each appendHtml() writes a separate line.  Newline
+                # characters are ignored.
                 self.plain_text_edit.appendHtml('')
         self.plain_text_edit.centerCursor()
 
@@ -245,6 +245,9 @@ if __name__ == '__main__':
 
             self.console.write('132 columns:\n')
             self.console.write('*'*132 + '\n')
+
+            self.console.write('partial line')
+            self.console.write('\nthis should be on a new line\n')
 
             # test spinner:
             self.console.write('Wait a little: x\bX')
