@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-#   Copyright (c) 2021 eGauge Systems LLC
+#   Copyright (c) 2021-2022 eGauge Systems LLC
 #     1644 Conestoga St, Suite 2
 #     Boulder, CO 80301
 #     voice: 720-545-9767
@@ -39,9 +39,9 @@ class LoginCanceled(Exception):
 class Credentials_Manager:
     def __init__(self, gui_parent=None):
         '''Create a credentials manager.  The task of this manager is mainly
-        to track if a previous login failed.  The creator of this
-        object should set the object's previous_login_failed member
-        according to the success/failure of a login.
+        to track if a previous login failed.  The user of this object
+        should set the previous_login_failed member to False after the
+        credentials have been used successfully.
 
         If GUI_PARENT is not None, it must be the QT5 (PySide2) parent
         window to use for the dialog.  If it is None, the credentials
@@ -64,6 +64,7 @@ class Credentials_Manager:
             dialog.exec_()
             if not dialog.accepted:
                 raise LoginCanceled()
+            self.previous_login_failed = True
             return (dialog.username, dialog.password + dialog.token)
 
         fail_msg = ''
@@ -75,6 +76,7 @@ class Credentials_Manager:
             pwd = getpass.getpass(prompt='Password[+token]: ')
         except (KeyboardInterrupt, EOFError) as e:
             raise LoginCanceled from e
+        self.previous_login_failed = True
         return [usr, pwd]
 
 class Credentials_Dialog(QDialog, Ui_Credentials_Dialog):
