@@ -45,61 +45,68 @@ import re
 import html
 
 HTML_STYLE = {
-    1:  'font-weight:bold',
-    3:  'font-style:italic',
-    4:  'text-decoration:underline',
-    9:  'text-decoration:line-through',
-    22: 'font-weight:normal',
-    23: 'font-style:normal',
-    24: 'text-decoration:none',
-    29: 'text-decoration:none',
-    30: 'color:black',
-    31: 'color:red',
-    32: 'color:green',
-    33: 'color:yellow',
-    34: 'color:blue',
-    35: 'color:magenta',
-    36: 'color:cyan',
-    37: 'color:white',
-    40: 'background-color:black',
-    41: 'background-color:red',
-    42: 'background-color:green',
-    43: 'background-color:yellow',
-    44: 'background-color:blue',
-    45: 'background-color:magenta',
-    46: 'background-color:cyan',
-    47: 'background-color:white',
+    1: "font-weight:bold",
+    3: "font-style:italic",
+    4: "text-decoration:underline",
+    9: "text-decoration:line-through",
+    22: "font-weight:normal",
+    23: "font-style:normal",
+    24: "text-decoration:none",
+    29: "text-decoration:none",
+    30: "color:black",
+    31: "color:red",
+    32: "color:green",
+    33: "color:yellow",
+    34: "color:blue",
+    35: "color:magenta",
+    36: "color:cyan",
+    37: "color:white",
+    40: "background-color:black",
+    41: "background-color:red",
+    42: "background-color:green",
+    43: "background-color:yellow",
+    44: "background-color:blue",
+    45: "background-color:magenta",
+    46: "background-color:cyan",
+    47: "background-color:white",
 }
+
 
 def convert(msg):
     msg = html.escape(msg, quote=False)
-    result = ''
+    result = ""
 
-    pattern = re.compile(r'\033\[(\d+)(;(\d+))*m')
+    pattern = re.compile(r"\033\[(\d+)(;(\d+))*m")
     span_count = 0
     while True:
         m = pattern.search(msg)
         if not m:
             result += msg
             break
-        result += msg[0:m.start()]
+        result += msg[0 : m.start()]
         code = int(m.group(1))
         if code == 0:
-            result += span_count*'</span>'
+            result += span_count * "</span>"
             span_count = 0
         elif code in HTML_STYLE:
             result += '<span style="%s">' % HTML_STYLE[code]
             span_count += 1
-        msg = msg[m.end(0):]
-    return result + span_count*'</span>'
+        msg = msg[m.end(0) :]
+    return result + span_count * "</span>"
+
 
 def selftest():
-    test = 'This is in \033[32mgreen\033[0m foreground.'
-    print('convert(\'%s\') -> \'%s\'' % (test, convert(test)))
-    test = 'This is in \033[41mred\033[0m background.  This \033[41mtoo\033[0m.'
-    print('convert(\'%s\') -> \'%s\'' % (test, convert(test)))
-    test = '\033[1mBold and \033[3mitalic and \033[4munderline\033[0m and none.'
-    print('convert(\'%s\') -> \'%s\'' % (test, convert(test)))
+    test = "This is in \033[32mgreen\033[0m foreground."
+    print("convert('%s') -> '%s'" % (test, convert(test)))
+    test = (
+        "This is in \033[41mred\033[0m background.  This \033[41mtoo\033[0m."
+    )
+    print("convert('%s') -> '%s'" % (test, convert(test)))
+    test = (
+        "\033[1mBold and \033[3mitalic and \033[4munderline\033[0m and none."
+    )
+    print("convert('%s') -> '%s'" % (test, convert(test)))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     selftest()

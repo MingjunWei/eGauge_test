@@ -14,7 +14,7 @@
 #
 # pylint: disable=no-name-in-module
 #
-'''This module provides a helper function to ask for eGauge cloud API
+"""This module provides a helper function to ask for eGauge cloud API
 credentials (aka eGuard credentials) via a popup dialog.  To use it,
 pass the ask method to the TokenAuth's ask parameter after partially
 evaluating it to bind the parent Qt window to "parent":
@@ -27,18 +27,20 @@ import egauge.webapi.cloud.credentials
     auth = webapi.auth.TokenAuth(ask=partial(credentials.ask, self))
     self.sn_api = webapi.cloud.SerialNumber(auth=auth)
 
-'''
+"""
 import getpass
 
 from PySide2.QtWidgets import QDialog
 from .gui.credentials_dialog import Ui_Credentials_Dialog
 
+
 class LoginCanceled(Exception):
-    '''Raised when the user cancels a login request.'''
+    """Raised when the user cancels a login request."""
+
 
 class Credentials_Manager:
     def __init__(self, gui_parent=None):
-        '''Create a credentials manager.  The task of this manager is mainly
+        """Create a credentials manager.  The task of this manager is mainly
         to track if a previous login failed.  The user of this object
         should set the previous_login_failed member to False after the
         credentials have been used successfully.
@@ -47,48 +49,50 @@ class Credentials_Manager:
         window to use for the dialog.  If it is None, the credentials
         will be requested via standard I/O (getpass).
 
-        '''
+        """
         self.parent = gui_parent
         self.previous_login_failed = False
 
     def ask(self):
-        '''Ask for the username, password, and optional token for an eGauge
+        """Ask for the username, password, and optional token for an eGauge
         cloud API account (eGuard account).  Returns a tuple
         containing a username and password or raises LoginCanceled if
         the user presses the "Cancel" button.
 
-        '''
+        """
         if self.parent:
-            dialog = Credentials_Dialog(self.parent,
-                                        self.previous_login_failed)
+            dialog = Credentials_Dialog(
+                self.parent, self.previous_login_failed
+            )
             dialog.exec_()
             if not dialog.accepted:
                 raise LoginCanceled()
             self.previous_login_failed = True
             return (dialog.username, dialog.password + dialog.token)
 
-        fail_msg = ''
+        fail_msg = ""
         if self.previous_login_failed:
-            fail_msg = 'Login failed.  '
-        print('%sPlease enter eGuard credentials.' % fail_msg)
+            fail_msg = "Login failed.  "
+        print("%sPlease enter eGuard credentials." % fail_msg)
         try:
-            usr = input('Username: ')
-            pwd = getpass.getpass(prompt='Password[+token]: ')
+            usr = input("Username: ")
+            pwd = getpass.getpass(prompt="Password[+token]: ")
         except (KeyboardInterrupt, EOFError) as e:
             raise LoginCanceled from e
         self.previous_login_failed = True
         return [usr, pwd]
+
 
 class Credentials_Dialog(QDialog, Ui_Credentials_Dialog):
     def __init__(self, parent, failed):
         self.accepted = False
         self.username = None
         self.password = None
-        self.token = ''
+        self.token = ""
         super().__init__(parent)
         self.setupUi(self)
         if failed:
-            prompt = 'Login failed. ' + self.prompt_label.text()
+            prompt = "Login failed. " + self.prompt_label.text()
             self.prompt_label.setText(prompt)
         self.username_lineEdit.setFocus()
 

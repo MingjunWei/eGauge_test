@@ -29,9 +29,8 @@
 # THE SOFTWARE.
 #
 class BitStuffer:
-
-    def __init__(self, header=b''):
-        self.run_length = 0	# current length of run of 1 bits
+    def __init__(self, header=b""):
+        self.run_length = 0  # current length of run of 1 bits
         self.output = header
         self.out_byte = 0x00
         self.out_mask = 0x80
@@ -39,7 +38,7 @@ class BitStuffer:
     def shift(self):
         self.out_mask >>= 1
         if self.out_mask == 0:
-            self.output += bytes((self.out_byte, ))
+            self.output += bytes((self.out_byte,))
             self.out_byte = 0x00
             self.out_mask = 0x80
 

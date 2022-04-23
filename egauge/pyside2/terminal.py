@@ -36,12 +36,13 @@ from PySide2.QtGui import QCursor, QTextCursor
 
 from . import ansi2html
 
-CLEAR_LINE_PATTERN = re.compile(r'.*\033\[2K')
-CURSOR_REPORT_PATTERN = re.compile(r'\033\[6n')
+CLEAR_LINE_PATTERN = re.compile(r".*\033\[2K")
+CURSOR_REPORT_PATTERN = re.compile(r"\033\[6n")
 # ANSI CSI sequence: ESC [ followed by any number of parameter bytes in
 # range 0x30-0x3f, followed by any number of intermediate bytes in
 # range 0x20-0x2f, followed by a single final byte in range 0x40-0x74:
-INCOMPLETE_ANSI_CSI_PATTERN = re.compile(r'\033(\[([0-?]*[ -/]*)?)?')
+INCOMPLETE_ANSI_CSI_PATTERN = re.compile(r"\033(\[([0-?]*[ -/]*)?)?")
+
 
 def split_keepends(string, pattern):
     res = []
@@ -56,22 +57,24 @@ def split_keepends(string, pattern):
             break
     return res
 
+
 def incomplete_ansi_csi(string):
-    '''Return True if the string forms a partial ANSI CSI ESCape sequence,
+    """Return True if the string forms a partial ANSI CSI ESCape sequence,
     False otherwise.
 
-    '''
+    """
     m = INCOMPLETE_ANSI_CSI_PATTERN.match(string)
     if m is None:
         return False
     return m.end() == len(string)
+
 
 class Terminal:
     """Provides basic terminal emulation for a QT plain text widget."""
 
     def __init__(self, plain_text_edit):
         self.plain_text_edit = plain_text_edit
-        self.partial_line = ''
+        self.partial_line = ""
 
     def write(self, string):
         """Write STRING to the terminal.  The string may consist of multiple
@@ -83,24 +86,24 @@ class Terminal:
             return
 
         string = self.partial_line + string
-        self.partial_line = ''
+        self.partial_line = ""
 
         # if the string ends with an incomplete ANSI CSI sequence,
         # hold off processing the partial escape sequence until it's
         # complete but process the text up to that point immediately:
-        for m in re.finditer(r'\033', string):
-            if incomplete_ansi_csi(string[m.start():]):
-                self.partial_line = string[m.start():]
-                string = string[0:m.start()]
+        for m in re.finditer(r"\033", string):
+            if incomplete_ansi_csi(string[m.start() :]):
+                self.partial_line = string[m.start() :]
+                string = string[0 : m.start()]
                 break
-        if len(self.partial_line) == 0 and string[-1] == '\r':
+        if len(self.partial_line) == 0 and string[-1] == "\r":
             # if the string ends with a carriage-return, hold off
             # processing the carriage return until we get the next
             # character:
-            self.partial_line = '\r'
+            self.partial_line = "\r"
             string = string[:-1]
 
-        lines = split_keepends(string, re.compile('(\r\n|\n|\r|\b)'))
+        lines = split_keepends(string, re.compile("(\r\n|\n|\r|\b)"))
         for line in lines:
             # position cursor at end of text (in case someone clicked in
             # the middle of the text):
@@ -112,27 +115,29 @@ class Terminal:
             line_feed = False
             txt = line
             if len(txt) >= 1:
-                if txt[-1] == '\b':
+                if txt[-1] == "\b":
                     back_space = True
                     txt = txt[:-1]
-                elif txt[-1] == '\r':
-                    txt = ''
-                    cursor.movePosition(QTextCursor.StartOfBlock,
-                                        QTextCursor.KeepAnchor)
+                elif txt[-1] == "\r":
+                    txt = ""
+                    cursor.movePosition(
+                        QTextCursor.StartOfBlock, QTextCursor.KeepAnchor
+                    )
                     cursor.removeSelectedText()
-                elif len(txt) >= 2 and txt[-2] == '\r' and txt[-1] == '\n':
+                elif len(txt) >= 2 and txt[-2] == "\r" and txt[-1] == "\n":
                     txt = txt[:-2]
                     line_feed = True
-                elif txt[-1] == '\n':
+                elif txt[-1] == "\n":
                     txt = txt[:-1]
                     line_feed = True
-            txt = CURSOR_REPORT_PATTERN.sub('', txt)
+            txt = CURSOR_REPORT_PATTERN.sub("", txt)
             m = CLEAR_LINE_PATTERN.match(txt)
             if m:
-                txt = txt[m.end():]
+                txt = txt[m.end() :]
                 cursor.movePosition(QTextCursor.StartOfBlock)
-                cursor.movePosition(QTextCursor.EndOfBlock,
-                                    QTextCursor.KeepAnchor)
+                cursor.movePosition(
+                    QTextCursor.EndOfBlock, QTextCursor.KeepAnchor
+                )
                 cursor.removeSelectedText()
 
             if len(txt) > 0:
@@ -141,7 +146,7 @@ class Terminal:
                 # preserved by insertHtml.  Argh...
                 # Use qt5ct to configure the "Fixed width" font which will
                 # be used for <pre>.
-                html = '<pre>' + ansi2html.convert(txt) + '</pre>'
+                html = "<pre>" + ansi2html.convert(txt) + "</pre>"
                 cursor.insertHtml(html)
             if back_space:
                 cursor.deletePreviousChar()
@@ -149,30 +154,34 @@ class Terminal:
             elif line_feed:
                 # Each appendHtml() writes a separate line.  Newline
                 # characters are ignored.
-                self.plain_text_edit.appendHtml('')
+                self.plain_text_edit.appendHtml("")
         self.plain_text_edit.centerCursor()
 
     def flush(self):
         """Flush pending output."""
 
+
 def test_incomplete_ansi_csi(seq):
-    print('Testing: %s' % seq)
-    CSI = '\033['
+    print("Testing: %s" % seq)
+    CSI = "\033["
     csi_seq = CSI + seq
     for l in range(len(csi_seq) - 1):
-        if not incomplete_ansi_csi(csi_seq[0:l+1]):
-            print('Error: CSI test sequence %s, l=%d returned False' % (seq, l))
+        if not incomplete_ansi_csi(csi_seq[0 : l + 1]):
+            print(
+                "Error: CSI test sequence %s, l=%d returned False" % (seq, l)
+            )
     if incomplete_ansi_csi(csi_seq):
-        print('Error: CSI test sequence %s returned True' % seq)
+        print("Error: CSI test sequence %s returned True" % seq)
 
-if __name__ == '__main__':
-    if incomplete_ansi_csi('hi there'):
+
+if __name__ == "__main__":
+    if incomplete_ansi_csi("hi there"):
         print('Error: CSI test sequence "hi there" returned True')
-    if incomplete_ansi_csi('x\033[s'):
+    if incomplete_ansi_csi("x\033[s"):
         print('Error: CSI test sequence "xCSIs" returned True')
-    test_incomplete_ansi_csi('6n')
-    test_incomplete_ansi_csi('16;34H')	# set cursor position
-    test_incomplete_ansi_csi('s')	# save cursor position
+    test_incomplete_ansi_csi("6n")
+    test_incomplete_ansi_csi("16;34H")  # set cursor position
+    test_incomplete_ansi_csi("s")  # save cursor position
 
     import sys
     from PySide2 import QtCore, QtWidgets
@@ -181,7 +190,7 @@ if __name__ == '__main__':
 
     class Ui_MainWindow:
         def setupUi(self, MainWindow):
-            MainWindow.setObjectName('Terminal Test')
+            MainWindow.setObjectName("Terminal Test")
             MainWindow.resize(908, 480)
             self.centralwidget = QtWidgets.QWidget(MainWindow)
             self.centralwidget.setObjectName("centralwidget")
@@ -189,17 +198,20 @@ if __name__ == '__main__':
             self.verticalLayout.setObjectName("verticalLayout")
             self.plainTextEdit = QtWidgets.QPlainTextEdit(self.centralwidget)
             self.plainTextEdit.setObjectName("plainTextEdit")
-            self.plainTextEdit \
-                .viewport().setProperty('cursor',
-                                        QCursor(QtCore.Qt.IBeamCursor))
+            self.plainTextEdit.viewport().setProperty(
+                "cursor", QCursor(QtCore.Qt.IBeamCursor)
+            )
             self.plainTextEdit.setMouseTracking(False)
             self.plainTextEdit.setFocusPolicy(QtCore.Qt.NoFocus)
             self.plainTextEdit.setAcceptDrops(False)
-            self.plainTextEdit.setStyleSheet('background-color: black;\n'
-                                             'color: white;\n')
+            self.plainTextEdit.setStyleSheet(
+                "background-color: black;\n" "color: white;\n"
+            )
             self.plainTextEdit.setLineWidth(1)
             self.plainTextEdit.setUndoRedoEnabled(False)
-            self.plainTextEdit.setLineWrapMode(QtWidgets.QPlainTextEdit.WidgetWidth)
+            self.plainTextEdit.setLineWrapMode(
+                QtWidgets.QPlainTextEdit.WidgetWidth
+            )
             self.plainTextEdit.setReadOnly(True)
             self.plainTextEdit.setTabStopWidth(80)
             self.plainTextEdit.setCursorWidth(16)
@@ -220,37 +232,36 @@ if __name__ == '__main__':
             self.setupUi(window)
 
             self.console = Terminal(self.plainTextEdit)
-            self.console.write('\033')
-            self.console.write('[')
-            self.console.write('6')
-            self.console.write('n')
-            self.console.write('\033[6nHi There!\033[6n\n')
+            self.console.write("\033")
+            self.console.write("[")
+            self.console.write("6")
+            self.console.write("n")
+            self.console.write("\033[6nHi There!\033[6n\n")
 
-            self.console.write('        \t8 blanks and a tab before me\n')
-            self.console.write('8 blanks and a tab after me>        \t')
-            self.console.write('<\n')
-            self.console.write('8 blanks        \tand a tab\n')
+            self.console.write("        \t8 blanks and a tab before me\n")
+            self.console.write("8 blanks and a tab after me>        \t")
+            self.console.write("<\n")
+            self.console.write("8 blanks        \tand a tab\n")
 
-            self.console.write('GOT mo')
-            self.console.write('del\r')
-            self.console.write('\n')
+            self.console.write("GOT mo")
+            self.console.write("del\r")
+            self.console.write("\n")
 
+            self.console.write("Feeling")
+            self.console.write(" a ")
+            self.console.write("little \033[44mblue\033[0m?\r\n")
 
-            self.console.write('Feeling')
-            self.console.write(' a ')
-            self.console.write('little \033[44mblue\033[0m?\r\n')
+            self.console.write("80 columns:\n")
+            self.console.write("*" * 80 + "\n")
 
-            self.console.write('80 columns:\n')
-            self.console.write('*'*80 + '\n')
+            self.console.write("132 columns:\n")
+            self.console.write("*" * 132 + "\n")
 
-            self.console.write('132 columns:\n')
-            self.console.write('*'*132 + '\n')
-
-            self.console.write('partial line')
-            self.console.write('\nthis should be on a new line\n')
+            self.console.write("partial line")
+            self.console.write("\nthis should be on a new line\n")
 
             # test spinner:
-            self.console.write('Wait a little: x\bX')
+            self.console.write("Wait a little: x\bX")
 
             self.spinner_pos = 0
             self.timer = QBasicTimer()
@@ -260,11 +271,11 @@ if __name__ == '__main__':
             if event.timerId() != self.timer.timerId():
                 super(UI, self).timerEvent(event)
 
-            self.console.write('\b%c' % '-\\|/'[self.spinner_pos % 4])
+            self.console.write("\b%c" % "-\\|/"[self.spinner_pos % 4])
             self.spinner_pos += 1
             if self.spinner_pos >= 16:
                 self.timer.stop()
-                self.console.write('\bdone with that...\n')
+                self.console.write("\bdone with that...\n")
 
     app = QApplication(sys.argv)
     window = QMainWindow()

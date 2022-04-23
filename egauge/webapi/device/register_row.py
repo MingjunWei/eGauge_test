@@ -27,18 +27,20 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-'''This module provides a helper class for a row of time-stamped
-register data.'''
+"""This module provides a helper class for a row of time-stamped
+register data."""
 import copy
 import json
 
+
 class RegisterRow:
-    '''A row of register data contains a timestamp and the (signed 64-bit)
+    """A row of register data contains a timestamp and the (signed 64-bit)
     values for that timestamp.  The timestamp is stored in member TS
     and the register values are stored in dictionary REGS, indexed by
     register name.
 
-    '''
+    """
+
     def __init__(self, ts, regs=None):
         self.ts = ts
         if regs is None:
@@ -46,15 +48,15 @@ class RegisterRow:
         self.regs = copy.copy(regs)
 
     def avg(self, regname):
-        '''Return the time-average of the register value.'''
+        """Return the time-average of the register value."""
         return self.regs[regname] / self.ts
 
     def __sub__(self, subtrahend):
-        '''Subtract two register rows from each other and return the result.
+        """Subtract two register rows from each other and return the result.
         The SUBTRAHEND must have values for all of the registers in
         the minuend row.
 
-        '''
+        """
         ret = RegisterRow(self.ts, self.regs)
         ret.ts = float(ret.ts - subtrahend.ts)
         for name in self.regs:
@@ -62,4 +64,4 @@ class RegisterRow:
         return ret
 
     def __str__(self):
-        return '%s: %s' % (self.ts, json.dumps(self.regs))
+        return "%s: %s" % (self.ts, json.dumps(self.regs))

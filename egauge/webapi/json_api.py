@@ -27,7 +27,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-'''This module provides helper methods for accessing JSON web services.'''
+"""This module provides helper methods for accessing JSON web services."""
 import logging
 import json
 
@@ -37,121 +37,151 @@ from .error import Error
 
 log = logging.getLogger(__name__)
 
+
 class JSONAPIError(Error):
-    '''Raised if for any JSON API errors.  The first argument to this
+    """Raised if for any JSON API errors.  The first argument to this
     exception is the 401 response received from the web server.
 
-    '''
+    """
+
 
 class UnauthenticatedError(Error):
-    '''Raised when a request fails with HTTP status code 401.'''
+    """Raised when a request fails with HTTP status code 401."""
+
 
 def get(resource, **kwargs):
-    '''Issue GET request for RESOURCE and return the parsed JSON data or
+    """Issue GET request for RESOURCE and return the parsed JSON data or
     None if the request failed or returned invalid JSON data.
     Additional keyword arguments are passed on to requests.get().
 
-    '''
+    """
     try:
         r = requests.get(resource, **kwargs)
     except requests.exceptions.RequestException as e:
-        raise JSONAPIError('requests.get exception.', e) from e
+        raise JSONAPIError("requests.get exception.", e) from e
     if r.status_code == 401:
         raise UnauthenticatedError(r)
     if r.status_code < 200 or r.status_code > 299:
         if log.getEffectiveLevel() <= logging.DEBUG:
-            log.exception('HTTP GET status code %s.  Keyword args: %s',
-                          r.status_code, kwargs)
-        raise JSONAPIError('Unexpected HTTP status code.', r.status_code, r.content)
+            log.exception(
+                "HTTP GET status code %s.  Keyword args: %s",
+                r.status_code,
+                kwargs,
+            )
+        raise JSONAPIError(
+            "Unexpected HTTP status code.", r.status_code, r.content
+        )
     reply = None
     try:
         if r.text:
             reply = r.json()
     except ValueError as e:
-        raise JSONAPIError('Invalid JSON data.', r.content) from e
+        raise JSONAPIError("Invalid JSON data.", r.content) from e
     return reply
 
+
 def put(resource, json_data, **kwargs):
-    '''Issue PUT request with JSON_DATA as body to RESOURCE and return
+    """Issue PUT request with JSON_DATA as body to RESOURCE and return
     parsed JSON reply or None if the request failed or returned
     invalid JSON data.  Additional keyword arguments are passed on to
     requests.put().
 
-    '''
-    headers = kwargs.get('headers', {})
-    headers['Content-Type'] = 'application/json'
-    kwargs['headers'] = headers
+    """
+    headers = kwargs.get("headers", {})
+    headers["Content-Type"] = "application/json"
+    kwargs["headers"] = headers
     try:
         r = requests.put(resource, json=json_data, **kwargs)
     except requests.exceptions.RequestException as e:
-        raise JSONAPIError('requests.put exception.', e) from e
+        raise JSONAPIError("requests.put exception.", e) from e
     if r.status_code == 401:
         raise UnauthenticatedError(r)
     if not 200 <= r.status_code <= 299:
         if log.getEffectiveLevel() <= logging.DEBUG:
-            log.exception('HTTP PUT status code %s.  '
-                          'Resource %s, Data: %s, keyword args: %s',
-                          r.status_code, resource, json_data, kwargs)
-        raise JSONAPIError('Unexpected HTTP status code.', r.status_code, r.content)
+            log.exception(
+                "HTTP PUT status code %s.  "
+                "Resource %s, Data: %s, keyword args: %s",
+                r.status_code,
+                resource,
+                json_data,
+                kwargs,
+            )
+        raise JSONAPIError(
+            "Unexpected HTTP status code.", r.status_code, r.content
+        )
     reply = None
     try:
         if r.text:
             reply = r.json()
     except ValueError as e:
-        raise JSONAPIError('Invalid JSON data.', r.content) from e
+        raise JSONAPIError("Invalid JSON data.", r.content) from e
     return reply
 
+
 def post(resource, json_data, **kwargs):
-    '''Issue POST request with JSON_DATA as body to RESOURCE and return
+    """Issue POST request with JSON_DATA as body to RESOURCE and return
     parsed JSON reply or None if the request failed or returned
     invalid JSON data.  Additional keyword arguments are passed on to
     requests.post().
 
-    '''
-    headers = kwargs.get('headers', {})
-    headers['Content-Type'] = 'application/json'
-    kwargs['headers'] = headers
+    """
+    headers = kwargs.get("headers", {})
+    headers["Content-Type"] = "application/json"
+    kwargs["headers"] = headers
     try:
         r = requests.post(resource, json=json_data, **kwargs)
     except requests.exceptions.RequestException as e:
-        raise JSONAPIError('requests.post exception.', e) from e
+        raise JSONAPIError("requests.post exception.", e) from e
     if r.status_code == 401:
         raise UnauthenticatedError(r)
     if not 200 <= r.status_code <= 299:
         if log.getEffectiveLevel() <= logging.DEBUG:
-            log.exception('HTTP POST status code %s.  '
-                          'Resource %s, Data: %s, keyword args: %s',
-                          r.status_code, resource, json_data, kwargs)
-        raise JSONAPIError('Unexpected HTTP status code.', r.status_code, r.content)
+            log.exception(
+                "HTTP POST status code %s.  "
+                "Resource %s, Data: %s, keyword args: %s",
+                r.status_code,
+                resource,
+                json_data,
+                kwargs,
+            )
+        raise JSONAPIError(
+            "Unexpected HTTP status code.", r.status_code, r.content
+        )
     reply = None
     try:
         if r.text:
             reply = r.json()
     except ValueError as e:
-        raise JSONAPIError('Invalid JSON data.', r.content) from e
+        raise JSONAPIError("Invalid JSON data.", r.content) from e
     return reply
 
+
 def delete(resource, **kwargs):
-    '''Issue DELETE request for RESOURCE and return the parsed JSON data
+    """Issue DELETE request for RESOURCE and return the parsed JSON data
     or None if the request failed or returned invalid JSON data.
     Additional keyword arguments are passed on to requests.delete().
 
-    '''
+    """
     try:
         r = requests.delete(resource, **kwargs)
     except requests.exceptions.RequestException as e:
-        raise JSONAPIError('requests.delete exception.', e) from e
+        raise JSONAPIError("requests.delete exception.", e) from e
     if r.status_code == 401:
         raise UnauthenticatedError(r)
     if r.status_code < 200 or r.status_code > 299:
         if log.getEffectiveLevel() <= logging.DEBUG:
-            log.exception('HTTP DELETE status code %s.  Keyword args: %s',
-                          r.status_code, kwargs)
-        raise JSONAPIError('Unexpected HTTP status code.', r.status_code, r.content)
+            log.exception(
+                "HTTP DELETE status code %s.  Keyword args: %s",
+                r.status_code,
+                kwargs,
+            )
+        raise JSONAPIError(
+            "Unexpected HTTP status code.", r.status_code, r.content
+        )
     reply = None
     try:
         if r.text:
             reply = r.json()
     except ValueError as e:
-        raise JSONAPIError('Invalid JSON data.', r.content) from e
+        raise JSONAPIError("Invalid JSON data.", r.content) from e
     return reply

@@ -27,7 +27,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-'''All WebAPI exceptions derive from the exception defined here.'''
+"""All WebAPI exceptions derive from the exception defined here."""
+
 
 class Error(Exception):
-    '''Base class of all WebAPI exceptions.'''
+    """Base class of all WebAPI exceptions."""
