@@ -80,6 +80,44 @@ def get(resource, **kwargs):
     return reply
 
 
+def patch(resource, json_data, **kwargs):
+    """Issue PATCH request with JSON_DATA as body to RESOURCE and return
+    parsed JSON reply or None if the request failed or returned
+    invalid JSON data.  Additional keyword arguments are passed on to
+    requests.patch().
+
+    """
+    headers = kwargs.get("headers", {})
+    headers["Content-Type"] = "application/json"
+    kwargs["headers"] = headers
+    try:
+        r = requests.patch(resource, json=json_data, **kwargs)
+    except requests.exceptions.RequestException as e:
+        raise JSONAPIError("requests.patch exception.", e) from e
+    if r.status_code == 401:
+        raise UnauthenticatedError(r)
+    if not 200 <= r.status_code <= 299:
+        if log.getEffectiveLevel() <= logging.DEBUG:
+            log.exception(
+                "HTTP PATCH status code %s.  "
+                "Resource %s, Data: %s, keyword args: %s",
+                r.status_code,
+                resource,
+                json_data,
+                kwargs,
+            )
+        raise JSONAPIError(
+            "Unexpected HTTP status code.", r.status_code, r.content
+        )
+    reply = None
+    try:
+        if r.text:
+            reply = r.json()
+    except ValueError as e:
+        raise JSONAPIError("Invalid JSON data.", r.content) from e
+    return reply
+
+
 def put(resource, json_data, **kwargs):
     """Issue PUT request with JSON_DATA as body to RESOURCE and return
     parsed JSON reply or None if the request failed or returned
