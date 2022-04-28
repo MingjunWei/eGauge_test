@@ -29,7 +29,6 @@
 #
 """This module provides helper methods for accessing JSON web services."""
 import logging
-import json
 
 import requests
 
