@@ -51,7 +51,7 @@ class LoginCanceled(Exception):
     """Raised when the user cancels a login request."""
 
 
-class Credentials_Manager:
+class CredentialsManager:
     def __init__(self, gui_parent=None):
         """Create a credentials manager.  The task of this manager is mainly
         to track if a previous login failed.  The user of this object
@@ -74,9 +74,7 @@ class Credentials_Manager:
 
         """
         if self.parent:
-            dialog = Credentials_Dialog(
-                self.parent, self.previous_login_failed
-            )
+            dialog = CredentialsDialog(self.parent, self.previous_login_failed)
             dialog.exec_()
             if not dialog.accepted:
                 raise LoginCanceled()
@@ -96,7 +94,7 @@ class Credentials_Manager:
         return [usr, pwd]
 
 
-class Credentials_Dialog(QDialog, Ui_Credentials_Dialog):
+class CredentialsDialog(QDialog, Ui_Credentials_Dialog):
     def __init__(self, parent, failed):
         self.accepted = False
         self.username = None
@@ -119,3 +117,9 @@ class Credentials_Dialog(QDialog, Ui_Credentials_Dialog):
         self.username = self.username_lineEdit.text()
         self.password = self.password_lineEdit.text()
         self.token = self.token_lineEdit.text()
+
+
+# Aliases for backwards-compatibility.  Please use CredentialsManager
+# and CredentialsDialog in new code.
+Credentials_Manager = CredentialsManager
+Credentials_Dialog = CredentialsDialog
