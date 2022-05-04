@@ -44,6 +44,10 @@ import requests
 from . import json_api
 
 
+# The name of the optional environment variable storing a token:
+ENV_EGAUGE_API_TOKEN = "EGAUGE_API_TOKEN"
+
+
 def _decorate_public_metaclass(decorator):
     """Return a metaclass which will decorate all public methods of a
     class with the DECORATOR function.
@@ -182,18 +186,20 @@ class TokenAuth(requests.auth.AuthBase):
         self.username = username
         self.password = password
         self.ask_credentials = ask
-        self.token_file = os.path.join(
-            os.path.join(os.getenv("HOME"), ".egauge_api_token")
-        )
-        self.token = None
+        self.token_file = None
         self.token_service_url = token_service_url
-        try:
-            with open(self.token_file, "r", encoding="utf-8") as f:
-                self.token = f.read().rstrip()
-                if len(self.token) < 32:
-                    self.token = None
-        except IOError:
-            pass
+        self.token = os.environ.get(ENV_EGAUGE_API_TOKEN)
+        if self.token is None:
+            self.token_file = os.path.join(
+                os.path.join(os.getenv("HOME"), ".egauge_api_token")
+            )
+            try:
+                with open(self.token_file, "r", encoding="utf-8") as f:
+                    self.token = f.read().rstrip()
+                    if len(self.token) < 32:
+                        self.token = None
+            except IOError:
+                pass
 
     def __call__(self, r):
         if self.token:
@@ -238,12 +244,16 @@ class TokenAuth(requests.auth.AuthBase):
 
         self.token = auth_reply["token"]
 
-        try:
-            fd = os.open(self.token_file, os.O_CREAT | os.O_WRONLY, 0o600)
-            os.write(fd, (self.token + "\n").encode("utf-8"))
-            os.close(fd)
-        except IOError:
-            pass
+        if self.token_file is None:
+            # the original token came for the os.environ
+            os.environ[ENV_EGAUGE_API_TOKEN] = self.token
+        else:
+            try:
+                fd = os.open(self.token_file, os.O_CREAT | os.O_WRONLY, 0o600)
+                os.write(fd, (self.token + "\n").encode("utf-8"))
+                os.close(fd)
+            except IOError:
+                pass
 
         prep = r.request.copy()
         prep.headers["Authorization"] = self.auth_header()
