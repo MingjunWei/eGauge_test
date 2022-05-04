@@ -73,6 +73,7 @@ def decorate_public(cls, decorator):
 
     """
 
+    # pylint: disable=unused-variable
     def wrapper(method):
         @wraps(method)
         def wrapped(*args, **kwargs):
@@ -81,6 +82,7 @@ def decorate_public(cls, decorator):
         return wrapped
 
     class DecoratedClass(cls, metaclass=_decorate_public_metaclass(wrapper)):
+        # pylint: disable=too-few-public-methods
         pass
 
     return DecoratedClass
@@ -126,7 +128,7 @@ class JWTAuth(requests.auth.AuthBase):
         realm = auth_request["rlm"]
         server_nonce = auth_request["nnc"]
 
-        client_nonce = "%x" % secrets.randbits(64)
+        client_nonce = f"{secrets.randbits(64):x}"
 
         content = self.username + ":" + realm + ":" + self.password
         ha1 = hashlib.md5(content.encode("utf-8")).hexdigest()
@@ -186,7 +188,7 @@ class TokenAuth(requests.auth.AuthBase):
         self.token = None
         self.token_service_url = token_service_url
         try:
-            with open(self.token_file, "r") as f:
+            with open(self.token_file, "r", encoding="utf-8") as f:
                 self.token = f.read().rstrip()
                 if len(self.token) < 32:
                     self.token = None
@@ -222,7 +224,6 @@ class TokenAuth(requests.auth.AuthBase):
                 return r
             [usr, pwd] = credentials
 
-        url = urlparse(r.request.url)
         creds = {"username": usr, "password": pwd}
         verify = kwargs.get("verify", True)
         auth_reply = requests.post(
