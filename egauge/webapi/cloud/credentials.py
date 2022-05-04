@@ -28,6 +28,8 @@ import egauge.webapi.cloud.credentials
     self.sn_api = webapi.cloud.SerialNumber(auth=auth)
 
 """
+# pylint: disable=too-few-public-methods
+
 import getpass
 
 from PySide2.QtWidgets import QDialog
@@ -73,7 +75,7 @@ class Credentials_Manager:
         fail_msg = ""
         if self.previous_login_failed:
             fail_msg = "Login failed.  "
-        print("%sPlease enter eGuard credentials." % fail_msg)
+        print(fail_msg + "Please enter eGuard credentials.")
         try:
             usr = input("Username: ")
             pwd = getpass.getpass(prompt="Password[+token]: ")
