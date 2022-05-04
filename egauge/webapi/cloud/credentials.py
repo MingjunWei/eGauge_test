@@ -32,8 +32,19 @@ import egauge.webapi.cloud.credentials
 
 import getpass
 
-from PySide2.QtWidgets import QDialog
-from .gui.credentials_dialog import Ui_Credentials_Dialog
+try:
+    from PySide2.QtWidgets import QDialog
+    from .gui.credentials_dialog import Ui_Credentials_Dialog
+
+    have_pyside2 = True
+except ModuleNotFoundError:
+    have_pyside2 = False
+
+    class QDialog:
+        """Dummy class for use by Credentials_Dialog."""
+
+    class Ui_Credentials_Dialog:
+        """Dummy class for use by Credentials_Dialog."""
 
 
 class LoginCanceled(Exception):
@@ -52,7 +63,7 @@ class Credentials_Manager:
         will be requested via standard I/O (getpass).
 
         """
-        self.parent = gui_parent
+        self.parent = gui_parent if have_pyside2 else None
         self.previous_login_failed = False
 
     def ask(self):
