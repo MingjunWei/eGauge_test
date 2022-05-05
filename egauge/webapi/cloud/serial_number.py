@@ -123,9 +123,7 @@ class SerialNumber:
         reply = self._get("models/")
         if reply is None:
             raise SerialNumberError("Failed to get SN models.")
-        if not "results" in reply:
-            raise SerialNumberError("Error getting SN models.", reply)
-        return reply["results"]
+        return reply
 
     def create_model(self, model_name, max_sn):
         """Create a new model with name MODEL_NAME and maximum serial number
