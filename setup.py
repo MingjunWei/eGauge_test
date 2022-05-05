@@ -9,7 +9,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setuptools.setup(
     name="egauge-python",
-    version="0.5.8",
+    version="0.5.9",
     packages=setuptools.find_namespace_packages(include="egauge.*"),
     install_requires=[
         "crcmod",
