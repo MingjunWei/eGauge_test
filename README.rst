@@ -43,14 +43,30 @@ eGauge cloud services.
 egauge.ctid
 -----------
 
-The classes in this module support manufacturing CTidÂ® sensors.  CTidÂ®
+The classes in this module support manufacturing CTid® sensors.  CTid®
 is patented technology and shall be used in accordance with the
 licensing agreements governing its use.
 
 |
 
-egauge.qt4
-----------
+egauge.pyside2
+--------------
 
-The classes in this module support PyQt4-based graphical
+The classes in this module support QT5-based graphical
 user-interfaces.
+
+|
+
+Source Code Conventions
+=======================
+
+Source code should be formatted with ``black`` using a maximum line-length
+of 79 characters.  Black can be installed with ``pip install black``.
+If the resulting output is inadequate for some reason, such as manually
+formatted data tables, you can make judicious use of ``# fmt: off`` and
+``# fmt: on`` to disable formatting for the relevant lines.
+
+Source code should be syntax checked with pylint.  Pylint can be
+installed with ``pip install pylint``.  You can make judicious use
+of ``# pylint: disable=``\ *warning-name* to temporarily disable
+warnings that can safely be ignored.
