@@ -151,10 +151,7 @@ class Window:
         if period < _MIN_CLK_PERIOD or period > _MAX_CLK_PERIOD:
             return None
 
-        self.tolerance = period / 4
-        sample_tolerance = 1.2 * self.sample_period
-        if self.tolerance < sample_tolerance:
-            self.tolerance = sample_tolerance
+        self.tolerance = max(period / 4, 1.2 * self.sample_period)
 
         # Verify that each bit has the expected period:
         curr_ts = end_ts
@@ -234,7 +231,16 @@ class ByteDecoder:
 
 
 class Decoder:
+    """Decode a sequence of equidistant sample values that represent a
+    differential Manchester-encoded signal into a byte stream.
+
+    """
+
     def __init__(self, sampling_freq):
+        """Create a waveform decoder assuming a sampling frequency of
+        SAMPLING_FREQ Hz.
+
+        """
         self.w = Window(sampling_freq)
         self.bd = ByteDecoder()
         self.period = None
