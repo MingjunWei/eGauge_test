@@ -28,7 +28,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
+import logging
 import math
+
+log = logging.getLogger(__name__)
 
 _START_SYM_ZC_COUNT = 16  # number of zero-crossings in start-symbol
 _CLK_FREQ = 480  # nominal clock frequency of CTid carrier
@@ -41,7 +44,6 @@ _MAX_CLK_PERIOD = 1e6 / _MIN_CLK_FREQ  # max. period in microseconds
 
 _START_SYM_MAX_DURATION = _START_SYM_ZC_COUNT / 2 * _MAX_CLK_PERIOD
 
-_DEBUG = 0
 
 def time_diff(l, r):
     return l - r
@@ -197,11 +199,13 @@ class ByteDecoder:
             return False
 
         bit = self.edge_count & 1
-        if _DEBUG >= 2:
-            print(
-                "bit %d at 0x%08x (edge_count %d, start_ts 0x%08x)"
-                % (bit, ts, self.edge_count, self.start_ts)
-            )
+        log.debug(
+            "bit %d at 0x%08x (edge_count %d, start_ts 0x%08x)",
+            bit,
+            ts,
+            self.edge_count,
+            self.start_ts,
+        )
 
         self.edge_count = 0
         self.start_ts = ts
@@ -256,8 +260,6 @@ class Decoder:
 
         if not self.w.at_zero_crossing():
             return 0
-        if _DEBUG >= 3:
-            print(
-                "zero-crossing at 0x%08x (mean %d)" % (timestamp, self.w.mean)
-            )
+
+        log.debug("zero-crossing at 0x%08x (mean %d)", timestamp, self.w.mean)
         return self.bd.update(self.period, self.w.tolerance, timestamp)
