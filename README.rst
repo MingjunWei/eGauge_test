@@ -43,7 +43,7 @@ eGauge cloud services.
 egauge.ctid
 -----------
 
-The classes in this module support manufacturing CTid® sensors.  CTid®
+The classes in this module support manufacturing CTidÂ® sensors.  CTidÂ®
 is patented technology and shall be used in accordance with the
 licensing agreements governing its use.
 
