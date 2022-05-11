@@ -437,75 +437,76 @@ class Table:
     def m_u2(self, name, scale=1, unit=None):
         fmt = ">B"
         if self.encoding:
-            val = fix(self.__dict__[name], 2, False, name, unit, scale)
+            val = fix(getattr(self, name), 2, False, name, unit, scale)
             self._raw_data += struct.pack(fmt, val << 6)
         else:
             val = struct.unpack_from(fmt, self._raw_data, self._raw_offset)[0]
             self._raw_offset += struct.calcsize(fmt)
-            self.__dict__[name] = unfix(val >> 6, scale)
+            setattr(self, name, unfix(val >> 6, scale))
 
     def m_u8(self, name, scale=1, unit=None):
         fmt = ">B"
         if self.encoding:
-            val = fix(self.__dict__[name], 8, False, name, unit, scale)
+            val = fix(getattr(self, name), 8, False, name, unit, scale)
             self._raw_data += struct.pack(fmt, val)
         else:
             val = struct.unpack_from(fmt, self._raw_data, self._raw_offset)[0]
             self._raw_offset += struct.calcsize(fmt)
-            self.__dict__[name] = unfix(val, scale)
+            setattr(self, name, unfix(val, scale))
 
     def m_s8(self, name, scale=1, unit=None, idx1=None, idx2=None):
         fmt = ">b"
         if self.encoding:
             if idx1 is not None and idx2 is not None:
                 val = fix(
-                    self.__dict__[name][idx1][idx2], 8, True, name, unit, scale
+                    getattr(self, name)[idx1][idx2], 8, True, name, unit, scale
                 )
             else:
-                val = fix(self.__dict__[name], 8, True, name, unit, scale)
+                val = fix(getattr(self, name), 8, True, name, unit, scale)
             self._raw_data += struct.pack(fmt, val)
         else:
             val = struct.unpack_from(fmt, self._raw_data, self._raw_offset)[0]
             self._raw_offset += struct.calcsize(fmt)
             if idx1 is not None and idx2 is not None:
-                self.__dict__[name][idx1][idx2] = unfix(val, scale)
+                t = getattr(self, name)
+                t[idx1][idx2] = unfix(val, scale)
             else:
-                self.__dict__[name] = unfix(val, scale)
+                setattr(self, name, unfix(val, scale))
 
     def m_u16(self, name, scale=1, unit=None):
         fmt = ">H"
         if self.encoding:
-            val = fix(self.__dict__[name], 16, False, name, unit, scale)
+            val = fix(getattr(self, name), 16, False, name, unit, scale)
             self._raw_data += struct.pack(fmt, val)
         else:
             val = struct.unpack_from(fmt, self._raw_data, self._raw_offset)[0]
             self._raw_offset += struct.calcsize(fmt)
-            self.__dict__[name] = unfix(val, scale)
+            setattr(self, name, unfix(val, scale))
 
     def m_s16(self, name, scale=1, unit=None):
         fmt = ">h"
         if self.encoding:
-            val = fix(self.__dict__[name], 16, True, name, unit, scale)
+            val = fix(getattr(self, name), 16, True, name, unit, scale)
             self._raw_data += struct.pack(fmt, val)
         else:
             val = struct.unpack_from(fmt, self._raw_data, self._raw_offset)[0]
             self._raw_offset += struct.calcsize(fmt)
-            self.__dict__[name] = unfix(val, scale)
+            setattr(self, name, unfix(val, scale))
 
     def m_d16(self, name, unit):
         fmt = ">H"
         if self.encoding:
-            val = self.__dict__[name]
+            val = getattr(self, name)
             self._raw_data += struct.pack(fmt, decimal16(val, name, unit))
         else:
             val = struct.unpack_from(fmt, self._raw_data, self._raw_offset)[0]
             self._raw_offset += struct.calcsize(fmt)
-            self.__dict__[name] = undecimal16(val)
+            setattr(self, name, undecimal16(val))
 
     def m_s12(self, name, scale=1, unit=None):
         fmt = ">H"
         if self.encoding:
-            s12 = fix(self.__dict__[name], 12, True, name, unit, scale)
+            s12 = fix(getattr(self, name), 12, True, name, unit, scale)
             if s12 < 0:
                 s12 &= 0xFFF
             self._raw_data += struct.pack(fmt, s12 << 4)
@@ -515,43 +516,43 @@ class Table:
             s12 = (u16 >> 4) & 0x0FFF
             if s12 >= 0x800:
                 s12 -= 0x1000
-            self.__dict__[name] = unfix(s12, scale)
+            setattr(self, name, unfix(s12, scale))
 
     def m_u4_s12(self, name4, scale4, unit4, name12, scale12=1, unit12=None):
         fmt = ">H"
         if self.encoding:
-            u4 = fix(self.__dict__[name4], 4, False, name4, unit4, scale4)
-            s12 = fix(self.__dict__[name12], 12, True, name12, unit12, scale12)
+            u4 = fix(getattr(self, name4), 4, False, name4, unit4, scale4)
+            s12 = fix(getattr(self, name12), 12, True, name12, unit12, scale12)
             if s12 < 0:
                 s12 &= 0xFFF
             self._raw_data += struct.pack(fmt, (u4 << 12) | s12)
         else:
             u16 = struct.unpack_from(fmt, self._raw_data, self._raw_offset)[0]
             self._raw_offset += struct.calcsize(fmt)
-            self.__dict__[name4] = unfix((u16 >> 12) & 0xF, scale4)
+            setattr(self, name4, unfix((u16 >> 12) & 0xF, scale4))
             s12 = u16 & 0x0FFF
             if s12 >= 0x800:
                 s12 -= 0x1000
-            self.__dict__[name12] = unfix(s12, scale12)
+            setattr(self, name12, unfix(s12, scale12))
 
     def m_f12_f12(self, name1, unit1, name2=1, unit2=None):
         fmt = ">BH"
         if self.encoding:
-            f1 = float12(self.__dict__[name1], name1, unit1)
-            f2 = float12(self.__dict__[name2], name2, unit2)
+            f1 = float12(getattr(self, name1), name1, unit1)
+            f2 = float12(getattr(self, name2), name2, unit2)
             u24 = (f1 << 12) | f2
             self._raw_data += struct.pack(fmt, u24 >> 16, u24 & 0xFFFF)
         else:
             val = struct.unpack_from(fmt, self._raw_data, self._raw_offset)
             u24 = (val[0] << 16) | val[1]
             self._raw_offset += struct.calcsize(fmt)
-            self.__dict__[name1] = round(unfloat12((u24 >> 12) & 0xFFF))
-            self.__dict__[name2] = round(unfloat12((u24 >> 0) & 0xFFF))
+            setattr(self, name1, round(unfloat12((u24 >> 12) & 0xFFF)))
+            setattr(self, name2, round(unfloat12((u24 >> 0) & 0xFFF)))
 
     def m_u24(self, name, scale=1, unit=None):
         fmt = ">BH"
         if self.encoding:
-            val = fix(self.__dict__[name], 24, False, name, unit, scale)
+            val = fix(getattr(self, name), 24, False, name, unit, scale)
             self._raw_data += struct.pack(
                 fmt, (val >> 16) & 0xFF, val & 0xFFFF
             )
@@ -559,25 +560,25 @@ class Table:
             val = struct.unpack_from(fmt, self._raw_data, self._raw_offset)
             val = (val[0] << 16) | val[1]
             self._raw_offset += struct.calcsize(fmt)
-            self.__dict__[name] = unfix(val, scale)
+            setattr(self, name, unfix(val, scale))
 
     def m_f32(self, name):
         fmt = ">f"
         if self.encoding:
-            self._raw_data += struct.pack(fmt, self.__dict__[name])
+            self._raw_data += struct.pack(fmt, getattr(self, name))
         else:
             val = struct.unpack_from(fmt, self._raw_data, self._raw_offset)
             self._raw_offset += struct.calcsize(fmt)
-            self.__dict__[name] = val[0]
+            setattr(self, name, val[0])
 
     def m_utf8_4(self, name):
         if self.encoding:
-            val = self.__dict__[name].encode("utf-8")
+            val = getattr(self, name).encode("utf-8")
             if len(val) > 4:
                 raise Error(
                     "%s `%s' is %u bytes long in UTF-8 "
                     "but only up to 4 bytes are allowed."
-                    % (name, self.__dict__[name], len(val))
+                    % (name, getattr(self, name), len(val))
                 )
             while len(val) < 4:
                 val += b"\0"
@@ -589,16 +590,16 @@ class Table:
                     break
                 raw += bytearray((self._raw_data[i],))
             self._raw_offset += 4
-            self.__dict__[name] = raw.decode()
+            setattr(self, name, raw.decode())
 
     def m_utf8_8(self, name):
         if self.encoding:
-            val = self.__dict__[name].encode("utf-8")
+            val = getattr(self, name).encode("utf-8")
             if len(val) > 8:
                 raise Error(
                     "%s `%s' is %u bytes long in UTF-8 "
                     "but only up to 8 bytes are allowed."
-                    % (name, self.__dict__[name], len(val))
+                    % (name, getattr(self, name), len(val))
                 )
             while len(val) < 8:
                 val += b"\0"
@@ -610,7 +611,7 @@ class Table:
                     break
                 raw += bytearray((self._raw_data[i],))
             self._raw_offset += 8
-            self.__dict__[name] = raw.decode()
+            setattr(self, name, raw.decode())
 
     def marshall_params_ct(self):
         """Current Transducer Parameters"""
