@@ -100,7 +100,7 @@ class CRCError(Exception):
         self.got = got
 
     def __str__(self):
-        return "Expected CRC 0x%x but got 0x%x" % (self.expected, self.got)
+        return f"Expected CRC {self.expected:#x} but got {self.got:#x}"
 
 
 class Error(Exception):
@@ -110,7 +110,8 @@ class Error(Exception):
 def get_mfg_id_for_name(name):
     """Return the manufacturer ID for the given name.  Name may be a
     prefix of the full manufacturer's name, as long as the prefix is
-    unique.
+    unique.  Alternatively, name may also be a decimal integer string
+    or a hexdecimal string with prefix 0x.
 
     """
     match = None
@@ -119,9 +120,8 @@ def get_mfg_id_for_name(name):
             if value[0 : len(name)] == name:
                 if match:
                     raise Error(
-                        "Manufacturer name %s is a prefix of multiple "
-                        "registered names.  Please specify more "
-                        "letters." % name
+                        f"Manufacturer name {name} is a prefix of multiple "
+                        "registered names.  Please specify more letters."
                     )
                 match = key
     if match is not None:
@@ -182,14 +182,14 @@ def fix(val, num_bits, is_signed, name, unit, scale):
     min_val = -(limit / 2) if is_signed else 0
     max_val = +(limit / 2 - 1) if is_signed else limit - 1
     if f < min_val or f > max_val:
-        unit_str = " %s" % unit if unit is not None else ""
+        unit_str = (" " + unit) if unit is not None else ""
         prec = -int(math.log10(scale))
-        val_str = ("%." + str(prec) + "f") % (val)
-        min_str = ("%." + str(prec) + "f") % ((min_val * scale))
-        max_str = ("%." + str(prec) + "f") % ((max_val * scale))
+        val_str = f"{val:.{prec}f}"
+        min_str = f"{min_val * scale:.{prec}f}"
+        max_str = f"{max_val * scale:.{prec}f}"
         raise Error(
-            "%s %s%s outside of range from %s to %s%s."
-            % (name, val_str, unit_str, min_str, max_str, unit_str)
+            f"{name} {val_str}{unit_str} outside of range "
+            f"from {min_str} to {max_str}{unit_str}."
         )
     return f
 
@@ -205,8 +205,7 @@ def float12(val, name, unit):
     """
     if val < 0 or val > 1e7:
         raise Error(
-            "%s %s%s outside of range from 0 to 10,000,000%s"
-            % (name, val, unit, unit)
+            f"{name} {val}{unit} outside of range from 0 to 10,000,000{unit}"
         )
     exp = math.log10(val) if val >= 1.0 else 0
     exp = int(math.ceil(exp))
@@ -245,8 +244,8 @@ def decimal16(val, name, unit):
             exp += 1
         if exp > 15:
             raise Error(
-                "%s %s%s outside of range from -1024e15..1023e15%s"
-                % (name, val, unit, unit)
+                f"{name} {val}{unit} outside of range "
+                f"from -1024e15..1023e15{unit}"
             )
         mantissa = int(mantissa)
     return ((mantissa & 0x7FF) << 5) | (exp & 0x1F)
@@ -351,83 +350,63 @@ class Table:
         if mfg_id_str is not None:
             mfg_id_str = '"' + mfg_id_str + '"'
         else:
-            mfg_id_str = "0x%04x" % self.mfg_id
+            mfg_id_str = f"{self.mfg_id:#04x}"
 
         sensor_type_str = get_sensor_type_name(self.sensor_type)
         if sensor_type_str is not None:
             sensor_type_str = '"' + sensor_type_str + '"'
         else:
-            sensor_type_str = "0x%1x" % self.sensor_type
+            sensor_type_str = f"{self.sensor_type:#1x}"
 
         ret = (
-            "CTid {version=%d, sensor_type=%s, mfg_id=%s, "
-            'model="%s", '
-            % (self.version, sensor_type_str, mfg_id_str, self.model)
+            f"CTid version={self.version:d}, sensor_type={sensor_type_str}, "
+            f'mfg_id={mfg_id_str}, model="{self.model}", '
         )
         if (
             self.sensor_type >= SENSOR_TYPE_AC
             and self.sensor_type <= SENSOR_TYPE_RC
         ):
+            rows = []
+            for lvl, val in self.cal_table.items():
+                rows.append(f"{repr(lvl)}%: {val[0]:+.2f}%/{val[1]:+.2f}°")
             ret += (
-                "size=%.1fmm, serial=%u, current=%.1fA, voltage=%.6fV, "
-                "bias=%.3fmV, "
-                "phase=%.2f\u00b0, voltage_temp_coeff=%.0fppm/\u00b0C, "
-                "phase_temp_coeff=%.1fm\u00b0/\u00b0C, reserved=0x%02x, "
-                "mfg_info=0x%02x, Rs=%g, Rl=%g, "
-                "cal={"
-                "1.5%%: %+.2f%%/%+.2f\u00b0, "
-                "5%%: %+.2f%%/%+.2f\u00b0, "
-                "15%%: %+.2f%%/%+.2f\u00b0, "
-                "50%%: %+.2f%%/%+.2f\u00b0}"
-                % (
-                    self.size,
-                    self.serial_number,
-                    self.rated_current,
-                    self.voltage_at_rated_current,
-                    1e3 * self.bias_voltage,
-                    self.phase_at_rated_current,
-                    self.voltage_temp_coeff,
-                    self.phase_temp_coeff,
-                    self.reserved,
-                    self.mfg_info,
-                    self.r_source,
-                    self.r_load,
-                    self.cal_table[1.5][0],
-                    self.cal_table[1.5][1],
-                    self.cal_table[5][0],
-                    self.cal_table[5][1],
-                    self.cal_table[15][0],
-                    self.cal_table[15][1],
-                    self.cal_table[50][0],
-                    self.cal_table[50][1],
-                )
+                f"size={self.size:.1f}mm, "
+                f"serial={self.serial_number}, "
+                f"current={self.rated_current:.1f}A, "
+                f"voltage={self.voltage_at_rated_current:.6f}V, "
+                f"bias={1e3 * self.bias_voltage:.3f}mV, "
+                f"phase={self.phase_at_rated_current:.2f}°, "
+                f"voltage_temp_coeff={self.voltage_temp_coeff:.0f}ppm/°C, "
+                f"phase_temp_coeff={self.phase_temp_coeff:.1f}m°/°C, "
+                f"reserved={self.reserved:#02x}, "
+                f"mfg_info={self.mfg_info:#02x}, "
+                f"Rs={self.r_source:g}, "
+                f"Rl={self.r_load:g}, "
+                "cal={" + ", ".join(rows) + "}"
             )
         elif self.sensor_type == SENSOR_TYPE_LINEAR:
             unit = get_sensor_unit(self.sensor_unit)
-            ret += "scale=%g%s/V offset=%g%s delay=%gμs" % (
-                self.scale,
-                unit,
-                self.offset,
-                unit,
-                self.delay,
+            ret += (
+                f"scale={self.scale:g}{unit}/V "
+                f"offset={self.offset:g}{unit} "
+                f"delay={self.delay:g}μs"
             )
         elif self.sensor_type == SENSOR_TYPE_TEMP_LINEAR:
-            ret += "scale=%g°C/V offset=%g°C" % (self.scale, self.offset)
+            ret += f"scale={self.scale:g}°C/V " f"offset={self.offset:g}°C"
         elif self.sensor_type == SENSOR_TYPE_TEMP_NTC:
-            ret += "A=%g B=%g C=%g M=%g N=%g K=%g" % (
-                self.ntc_a,
-                self.ntc_b,
-                self.ntc_c,
-                self.ntc_m,
-                self.ntc_n,
-                self.ntc_k,
+            ret += (
+                f"A={self.ntc_a:g} "
+                f"B={self.ntc_b:g} "
+                f"C={self.ntc_c:g} "
+                f"M={self.ntc_m:g} "
+                f"N={self.ntc_n:g} "
+                f"K={self.ntc_k:g}"
             )
         elif self.sensor_type == SENSOR_TYPE_PULSE:
-            ret += "threshold=%g±%gV debounce=%ums edge=0x%x" % (
-                self.threshold,
-                self.hysteresis,
-                self.debounce_time,
-                self.edge_mask,
+            ret += (
+                f"threshold={self.threshold:g}±{self.hysteresis:g}V "
+                f"debounce={self.debounce_time:d}ms "
+                f"edge={self.edge_mask:#x}"
             )
         else:
             pass
@@ -576,9 +555,8 @@ class Table:
             val = getattr(self, name).encode("utf-8")
             if len(val) > 4:
                 raise Error(
-                    "%s `%s' is %u bytes long in UTF-8 "
-                    "but only up to 4 bytes are allowed."
-                    % (name, getattr(self, name), len(val))
+                    f"{name} `{getattr(self, name)}' is {len(val)} bytes "
+                    "long in UTF-8 but only up to 4 bytes are allowed."
                 )
             while len(val) < 4:
                 val += b"\0"
@@ -597,9 +575,8 @@ class Table:
             val = getattr(self, name).encode("utf-8")
             if len(val) > 8:
                 raise Error(
-                    "%s `%s' is %u bytes long in UTF-8 "
-                    "but only up to 8 bytes are allowed."
-                    % (name, getattr(self, name), len(val))
+                    f"{name} `{getattr(self, name)}' is {len(val)} bytes "
+                    "long in UTF-8 but only up to 8 bytes are allowed."
                 )
             while len(val) < 8:
                 val += b"\0"
@@ -618,9 +595,9 @@ class Table:
         self.m_u16("rated_current", 0.1, "A")
         self.m_u16("voltage_at_rated_current", 10e-6, "V")
         self.m_u16("size", 0.1, "mm")
-        self.m_s12("phase_at_rated_current", 0.01, "\u00b0")
-        self.m_s8("voltage_temp_coeff", 5, "ppm/\u00b0C")
-        self.m_s8("phase_temp_coeff", 0.5, "m\u00b0/\u00b0C")
+        self.m_s12("phase_at_rated_current", 0.01, "°")
+        self.m_s8("voltage_temp_coeff", 5, "ppm/°C")
+        self.m_s8("phase_temp_coeff", 0.5, "m°/°C")
         for k in sorted(self.cal_table.keys()):
             self.m_s8("cal_table", 0.02, "%", idx1=k, idx2=0)
             self.m_s8("cal_table", 0.02, "\u00b0", idx1=k, idx2=1)
@@ -710,13 +687,13 @@ class Table:
                     None,
                     "phase_at_rated_current",
                     0.01,
-                    "\u00b0",
+                    "°",
                 )
-                self.m_s8("voltage_temp_coeff", 5, "ppm/\u00b0C")
-                self.m_s8("phase_temp_coeff", 0.5, "m\u00b0/\u00b0C")
+                self.m_s8("voltage_temp_coeff", 5, "ppm/°C")
+                self.m_s8("phase_temp_coeff", 0.5, "m°/°C")
                 for k in sorted(self.cal_table.keys()):
                     self.m_s8("cal_table", 0.02, "%", idx1=k, idx2=0)
-                    self.m_s8("cal_table", 0.02, "\u00b0", idx1=k, idx2=1)
+                    self.m_s8("cal_table", 0.02, "°", idx1=k, idx2=1)
                 self.m_u8("reserved")
                 self.m_u8("mfg_info")
                 if self.version > 1:
@@ -734,7 +711,7 @@ class Table:
         if version < 2 and (self.r_source != 0.0 or self.r_load != 0.0):
             raise Error(
                 "Unable to encode r_source and r_load in "
-                "CTid table version %u." % version
+                f"CTid table version {version}."
             )
         try:
             self.marshall()
