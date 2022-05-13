@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2021 eGauge Systems LLC
+# Copyright (c) 2018-2022 eGauge Systems LLC
 # 	1644 Conestoga St, Suite 2
 # 	Boulder, CO 80301
 # 	voice: 720-545-9767
@@ -192,9 +192,8 @@ def main():
     parser.add_argument(
         "-V",
         "--table-version",
-        nargs=1,
         type=int,
-        default=[CTid.CTID_VERSION],
+        default=None,
         help="Version of the CTid table to generate.",
     )
     #
@@ -340,7 +339,7 @@ def main():
 
     args = parser.parse_args()
 
-    table_version = args.table_version[0]
+    table_version = args.table_version
 
     table.mfg_id = CTid.get_mfg_id_for_name(args.manufacturer[0])
     table.model = args.model[0]
@@ -399,10 +398,23 @@ def main():
     if args.debug[0] > 0:
         print("CTid params:\n\t", table)
 
+    exception = None
     try:
-        table_data = table.encode(table_version)
-    except CTid.Error:
-        print("%s: %s" % (parser.prog, sys.exc_info()[1]), file=sys.stderr)
+        if table_version is not None:
+            table_data = table.encode(table_version)
+        else:
+            table_data = table.encode()
+    except CTid.Error as e:
+        exception = e
+        if table_version is None and CTid.CTID_VERSION < 6:
+            try:
+                table_data = table.encode(version=5)
+                print(f"{parser.prog}: using v5 encoding")
+                e = None
+            except CTid.Error as e:
+                exception = e
+    if exception:
+        print(f"{parser.prog}: {exception}", file=sys.stderr)
         sys.exit(1)
 
     if args.debug[0] > 0:

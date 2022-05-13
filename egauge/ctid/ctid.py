@@ -35,7 +35,8 @@ import crcmod
 
 from .bit_stuffer import BitStuffer
 
-CTID_VERSION = 4  # version of CTid Specification this code implements
+
+CTID_VERSION = 5  # latest version of CTid Specification this code supports
 START_SYM = 0xFF
 
 SENSOR_TYPE_AC = 0x0  # AC-only sensor
@@ -174,6 +175,15 @@ def mfg_short_name(ident):
 def get_mfg_id(ident):
     """For backwards compatibility.  Please use mfg_name() instead."""
     return mfg_name(ident)
+
+
+def s10(val):
+    """Convert 10 bit unsigned integer to a signed 9-bit integer."""
+    if not 0 <= val < 1024:
+        raise ValueError
+    if val < 512:
+        return val
+    return val - 1024
 
 
 def fix(val, num_bits, is_signed, name, unit, scale):
@@ -452,6 +462,35 @@ class Table:
             else:
                 setattr(self, name, unfix(val, scale))
 
+    def m_4s10(self, name, levels):
+        """Pack/unpack four signed 10-bit words into/from 5 unsigned bytes."""
+        fmt = 5 * "B"
+        t = getattr(self, name)
+        if self.encoding:
+            v0 = fix(t[levels[0]][0], 10, True, name, "%", 0.01)
+            v1 = fix(t[levels[0]][1], 10, True, name, "°", 0.01)
+            v2 = fix(t[levels[1]][0], 10, True, name, "%", 0.01)
+            v3 = fix(t[levels[1]][1], 10, True, name, "°", 0.01)
+            bs = (
+                (v0 >> 2) & 0xff,
+                ((v0 & 0x03) << 6) | ((v1 >> 4) & 0x3f),
+                ((v1 & 0x0f) << 4) | ((v2 >> 6) & 0x0f),
+                ((v2 & 0x3f) << 2) | ((v3 >> 8) & 0x03),
+                (v3 & 0xff),
+            )
+            self._raw_data += struct.pack(fmt, *bs)
+        else:
+            bs = struct.unpack_from(fmt, self._raw_data, self._raw_offset)
+            self._raw_offset += struct.calcsize(fmt)
+            v0 = s10((bs[0] << 2) | ((bs[1] >> 6) & 0x03))
+            v1 = s10(((bs[1] & 0x3f) << 4) | ((bs[2] >> 4) & 0x0f))
+            v2 = s10(((bs[2] & 0x0f) << 6) | ((bs[3] >> 2) & 0x3f))
+            v3 = s10(((bs[3] & 0x03) << 8) | bs[4])
+            t[levels[0]][0] = unfix(v0, 0.01)
+            t[levels[0]][1] = unfix(v1, 0.01)
+            t[levels[1]][0] = unfix(v2, 0.01)
+            t[levels[1]][1] = unfix(v3, 0.01)
+
     def m_u16(self, name, scale=1, unit=None):
         fmt = ">H"
         if self.encoding:
@@ -598,13 +637,21 @@ class Table:
         self.m_s12("phase_at_rated_current", 0.01, "°")
         self.m_s8("voltage_temp_coeff", 5, "ppm/°C")
         self.m_s8("phase_temp_coeff", 0.5, "m°/°C")
-        for k in sorted(self.cal_table.keys()):
-            self.m_s8("cal_table", 0.02, "%", idx1=k, idx2=0)
-            self.m_s8("cal_table", 0.02, "\u00b0", idx1=k, idx2=1)
+        if self.version >= 5:
+            keys = list(self.cal_table.keys())
+            if len(keys) != 4:
+                raise Error(f"Cal table has {len(keys)} rows; expected 4.")
+            self.m_4s10("cal_table", keys[0:2])
+            self.m_4s10("cal_table", keys[2:4])
+        else:
+            for k in sorted(self.cal_table.keys()):
+                self.m_s8("cal_table", 0.02, "%", idx1=k, idx2=0)
+                self.m_s8("cal_table", 0.02, "\u00b0", idx1=k, idx2=1)
         self.m_s16("bias_voltage", 1e-6, "V")
 
     def marshall_params_basic_linear(self):
-        """Basic linear Parameters (for linear temp. and generic linear sensors)."""
+        """Basic linear Parameters (for linear temp. and generic linear
+        sensors)."""
         self.m_f32("scale")
         self.m_f32("offset")
 
@@ -699,7 +746,10 @@ class Table:
                 if self.version > 1:
                     self.m_f12_f12("r_source", "Ω", "r_load", "Ω")
 
-    def encode(self, version=CTID_VERSION):
+    # TODO: Default to version 4 for now.  Once eGauge firmware v4.1.3
+    # or later is widely in use, we can switch this back to
+    # version=CTID_VERSION.
+    def encode(self, version=4):
         """Encode the table contents and store is as a sequence of bytes in
         property ``raw_data''.
 
