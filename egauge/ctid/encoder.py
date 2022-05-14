@@ -410,7 +410,7 @@ def main():
             try:
                 table_data = table.encode(version=5)
                 print(f"{parser.prog}: using v5 encoding")
-                e = None
+                exception = None
             except CTid.Error as e:
                 exception = e
     if exception:
