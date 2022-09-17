@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020 eGauge Systems LLC
+# Copyright (c) 2020, 2022 eGauge Systems LLC
 #       1644 Conestoga St, Suite 2
 #       Boulder, CO 80301
 #       voice: 720-545-9767
@@ -32,24 +32,65 @@ register data."""
 import copy
 import json
 
+from deprecated import deprecated
+
+from .register_type import Units
+from .physical_quantity import PhysicalQuantity
+
+
+class Error(Exception):
+    """All errors in this module raise this exception."""
+
 
 class RegisterRow:
-    """A row of register data contains a timestamp and the (signed 64-bit)
-    values for that timestamp.  The timestamp is stored in member TS
-    and the register values are stored in dictionary REGS, indexed by
-    register name.
+    """A row of register data contains a timestamp and the signed 64-bit
+    register values for that timestamp.  Subtracing one row from
+    another creates a difference row.  On a difference row,
+    RegisterRow.pq_accu() can be called to get the amount by which a
+    register changed between the two rows.
 
-    """
+    Similarly, RegisterRow.pq_avg() can be called to calculate the
+    average register value that was in effect between the two rows."""
 
-    def __init__(self, ts, regs=None):
+    def __init__(self, ts, regs=None, type_codes=None):
         self.ts = ts
+        self.is_diff = False
         if regs is None:
-            regs = {}
-        self.regs = copy.copy(regs)
+            self.regs = {}
+        else:
+            self.regs = copy.copy(regs)
+        if type_codes is None:
+            self.type_codes = {}
+        else:
+            self.type_codes = copy.copy(type_codes)
 
-    def avg(self, regname):
+    @deprecated(version="0.7.0", reason="use pq_avg() instead")
+    def avg(self, regname) -> float:
         """Return the time-average of the register value."""
+        self._assert(self.is_diff)
         return self.regs[regname] / self.ts
+
+    def pq_avg(self, regname) -> PhysicalQuantity:
+        """Return the time-average of the register value as a physical
+        quantity in the preferred unit of the default unit system
+        (see PhysicalQuantity.set_unit_system())."""
+        self._assert(self.is_diff)
+        ute = Units.table[self.type_codes[regname]]
+        val = self.regs[regname] / ute.fix_scale / self.ts
+        return PhysicalQuantity(
+            val, self.type_codes[regname], is_cumul=False
+        ).to_preferred()
+
+    def pq_accu(self, regname):
+        """Return the accumulated register value as a physical quantity in the
+        preferred unit of the default unit system (see
+        PhysicalQuantity.set_unit_system())."""
+        self._assert(self.is_diff)
+        ute = Units.table[self.type_codes[regname]]
+        val = self.regs[regname] * ute.cumul_scale
+        return PhysicalQuantity(
+            val, self.type_codes[regname], is_cumul=True
+        ).to_preferred(dt=self.ts)
 
     def __sub__(self, subtrahend):
         """Subtract two register rows from each other and return the result.
@@ -57,11 +98,22 @@ class RegisterRow:
         the minuend row.
 
         """
-        ret = RegisterRow(self.ts, self.regs)
+        self._assert(not self.is_diff)
+        subtrahend._assert(not self.is_diff)
+
+        ret = RegisterRow(self.ts, self.regs, self.type_codes)
         ret.ts = float(ret.ts - subtrahend.ts)
+        ret.is_diff = True
         for name in self.regs:
             ret.regs[name] -= subtrahend.regs[name]
         return ret
 
+    def _assert(self, cond: bool):
+        if cond:
+            return
+        if self.is_diff:
+            raise Error("It is not possible to subtract a difference row.")
+        raise Error("The row must be a difference.")
+
     def __str__(self):
-        return "%s: %s" % (self.ts, json.dumps(self.regs))
+        return f"{self.ts}: {json.dumps(self.regs)}"

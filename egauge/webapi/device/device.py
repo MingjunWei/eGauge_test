@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020 eGauge Systems LLC
+# Copyright (c) 2020, 2022 eGauge Systems LLC
 #       1644 Conestoga St, Suite 2
 #       Boulder, CO 80301
 #       voice: 720-545-9767
@@ -29,9 +29,11 @@
 #
 """Module to provide access to a device's JSON WebAPI."""
 
-from .. import json_api
+from types import SimpleNamespace
 
+from .. import json_api
 from ..error import Error
+from .virtual_register import VirtualRegister
 
 
 class DeviceError(Error):
@@ -52,8 +54,7 @@ class Device:
         """
         self.api_uri = dev_uri + "/api"
         self.auth = auth
-        self._reg_idx = None
-        self._reg_formula = None
+        self._reg_info = None
 
     def get(self, resource, **kwargs):
         """Issue GET request for /api resource RESOURCE and return the parsed
@@ -103,11 +104,13 @@ class Device:
         reply = self.get("/register", params={"virtual": "formula"})
         if reply is None or "registers" not in reply:
             raise DeviceError("Failed to fetch register info.", reply)
-        self._reg_idx = {}
-        self._reg_formula = {}
+        self._reg_info = {}
         for reg in reply["registers"]:
-            self._reg_idx[reg["name"]] = reg["idx"]
-            self._reg_formula[reg["name"]] = reg.get("formula")
+            ri = SimpleNamespace(idx=reg["idx"], tc=reg["type"], formula=None)
+            formula = reg.get("formula")
+            if formula is not None:
+                ri.formula = VirtualRegister(formula)
+            self._reg_info[reg["name"]] = ri
 
     def reg_idx(self, regname):
         """Return the register index for the register with name REGNAME.  This
@@ -115,17 +118,41 @@ class Device:
         expensive to get (requires a separate call to /api/register).
 
         """
-        if self._reg_idx is None:
+        if self._reg_info is None:
             self._fetch_reg_info()
-        return self._reg_idx[regname]
+        return self._reg_info[regname].idx
 
-    def reg_formula(self, regname):
-        """Return the register formula for the register with name REGNAME.
-        This information is cached in the device since it is
-        relatively expensive to get (requires a separate call to
-        /api/register).
+    def reg_type(self, regname):
+        """Return the type code of the register with name REGNAME.  This
+        information is cached in the device since it is relatively
+        expensive to get (requires a separate call to /api/register).
 
         """
-        if self._reg_formula is None:
+        if self._reg_info is None:
             self._fetch_reg_info()
-        return self._reg_formula[regname]
+        return self._reg_info[regname].tc
+
+    def reg_virtuals(self):
+        """Return the list of virtual register names."""
+        if self._reg_info is None:
+            self._fetch_reg_info()
+        virts = []
+        for reg, ri in self._reg_info.items():
+            if ri.formula:
+                virts.append(reg)
+        return virts
+
+    def reg_formula(self, regname):
+        """Return the register formula for the register with name REGNAME or
+        None if the register is not a virtual register.  This
+        information is cached in the device since it is relatively
+        expensive to get (requires a separate call to /api/register).
+
+        """
+        if self._reg_info is None:
+            self._fetch_reg_info()
+        return self._reg_info[regname].formula
+
+    def clear_cache(self):
+        """Clear the cached contents for this device."""
+        self._reg_info = None
