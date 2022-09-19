@@ -27,7 +27,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-from typing import List
+from typing import List, Union
 
 import re
 
@@ -87,7 +87,7 @@ class PhysicalQuantity:
 
     def __init__(
         self,
-        value: float | PhysicalValue,
+        value: Union[float, PhysicalValue],
         type_code: str = None,
         is_cumul: bool = False,
         unit: str = None,

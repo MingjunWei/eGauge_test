@@ -28,7 +28,7 @@
 # THE SOFTWARE.
 #
 from dataclasses import dataclass
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional, Union
 
 
 class Error(Exception):
@@ -213,7 +213,7 @@ class PhysicalUnits:
         to_unit: str,
         is_diff: Optional[bool] = False,
         t: Optional[float] = None,
-    ) -> float | None:
+    ) -> Union[float, None]:
         """Convert a value from a source unit to a destination unit.  X is the
         value to convert.  FROM_UNIT is the unit of X.  TO_UNIT is the
         unit to which to convert X to.  IS_DIFF is an optional
@@ -304,7 +304,7 @@ class PhysicalUnits:
                     break
         return best
 
-    def primary_unit(self, unit: str) -> str | None:
+    def primary_unit(self, unit: str) -> Union[str, None]:
         """Return the name of the primary unit for a unit.  UNIT is the unit
         name for which to return the primary unit.  This method the
         primary unit name or None if UNIT is not a recognized unit."""
@@ -348,7 +348,7 @@ class PhysicalUnits:
         available.sort(key=lambda el: el[1])
         return [el[0] for el in available]
 
-    def _primary(self, unit: str) -> PrimaryUnit | None:
+    def _primary(self, unit: str) -> Union[PrimaryUnit, None]:
         """Get the primary unit object for a unit.  UNIT is the unit whose
         primary unit to get.  This method returns the primary unit
         object or None if UNIT is not a recognized unit."""
