@@ -38,6 +38,10 @@ from .register_type import RegisterType, Units, UnitSystem
 UNIT_PATTERN = re.compile(r"(.*)/(.*)$")
 
 
+class Error(Exception):
+    """Base class for all exceptions raised by this module."""
+
+
 class PhysicalQuantity:
     """A physical quantity is a measurement that is expressed as a value
     and a a unit, for example, 10 kW has a value of 10 and a unit of
@@ -135,6 +139,18 @@ class PhysicalQuantity:
         the user, PhysicalQuantity.locale_unit() should be used."""
         return self.pv.unit
 
+    def to(self, unit: str, dt: float = None) -> float:
+        """Return the quantity's value in the unit given by `unit`.  If the
+        conversion is not possible an exception is raised.  If the
+        quantity is a cumulative value `dt` needs to specify the time
+        over which the quantity was measured.
+
+        """
+        x = self._to_unit(unit, dt)
+        if x is None:
+            raise Error("Conversion not possible.", self.pv.unit, unit)
+        return x
+
     @property
     def locale_unit(self):
         """Return the localized unit.  This should be used when outputting a
@@ -161,35 +177,9 @@ class PhysicalQuantity:
         time-duration over which the quantity was measured.  This is
         needed because some conversions (e.g., °C·s to °K·s or °F·s)
         require a time-dependent adjustment."""
-        x = Units.units.convert(
-            self.pv.value, self.pv.unit, unit, self.diff, dt
-        )
+        x = self._to_unit(unit, dt)
         if x is not None:
-            return self._set(x, unit)
-
-        primary_unit = Units.units.primary_unit(self.pv.unit) or ""
-        if primary_unit[-2:] == "·s" and unit[-2:] == "·s":
-            if self.pv.unit != primary_unit:
-                x = Units.units.convert(
-                    self.pv.value, self.pv.unit, primary_unit, self.diff, dt
-                )
-            else:
-                x = self.pv.value
-
-            if x is not None:
-                # If the conversion between two rate-units involves a
-                # simple scale-factor, then the time-integrated
-                # (cumulative) units of those rate-units can be
-                # converted using the same factor.  This only works as
-                # long as the rate-conversion is linear.  Fortunately,
-                # we don't have any crazy units using non-linear
-                # conversions so far.
-                x = Units.units.convert(
-                    x, primary_unit.slice[:-2], unit[:-2], self.diff, dt
-                )
-                if x is not None:
-                    return self._set(x, unit)
-        # conversion failed - leave the quantity unchanged
+            self._set(x, unit)
         return self
 
     def to_preferred(
@@ -245,6 +235,43 @@ class PhysicalQuantity:
         1000."""
         self.pv = Units.units.auto_scale(self.pv)
         return self
+
+    def _to_unit(self, unit: str, dt: float = None) -> Union[float, None]:
+        """Try to convert this quantity to `unit`.  If the conversion is not
+        possible, None is returned.  Otherwise, the value in the
+        desired unit is returned.
+
+        """
+        x = Units.units.convert(
+            self.pv.value, self.pv.unit, unit, self.diff, dt
+        )
+        if x is not None:
+            return x
+
+        primary_unit = Units.units.primary_unit(self.pv.unit) or ""
+        if primary_unit[-2:] == "·s" and unit[-2:] == "·s":
+            if self.pv.unit != primary_unit:
+                x = Units.units.convert(
+                    self.pv.value, self.pv.unit, primary_unit, self.diff, dt
+                )
+            else:
+                x = self.pv.value
+
+            if x is not None:
+                # If the conversion between two rate-units involves a
+                # simple scale-factor, then the time-integrated
+                # (cumulative) units of those rate-units can be
+                # converted using the same factor.  This only works as
+                # long as the rate-conversion is linear.  Fortunately,
+                # we don't have any crazy units using non-linear
+                # conversions so far.
+                x = Units.units.convert(
+                    x, primary_unit.slice[:-2], unit[:-2], self.diff, dt
+                )
+                if x is not None:
+                    return x
+        # conversion failed - leave the quantity unchanged
+        return None
 
     def _set(self, val: float, unit: str) -> "PhysicalQuantity":
         """Establish the new value VAL and UNIT for the quantity."""
