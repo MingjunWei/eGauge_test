@@ -259,6 +259,13 @@ class PhysicalUnits:
         if not pu:
             return None
 
+        # verify that we can convert between the two units:
+        if isinstance(pu, AlternateUnit):
+            if pu.primary != primary:
+                return None
+        elif pu != primary:
+            return None
+
         valid_unit = False
         if primary.alternates:
             au = primary.alternates.get(pu.name)
