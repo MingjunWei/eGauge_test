@@ -29,15 +29,22 @@
 #
 """Module to provide access to a device's JSON WebAPI."""
 
+from dataclasses import dataclass
 from types import SimpleNamespace
+from typing import List
 
 from .. import json_api
 from ..error import Error
 from .virtual_register import VirtualRegister
 
-
 class DeviceError(Error):
     """Raised if for device related errors."""
+
+
+@dataclass
+class ChannelInfo:
+    chan: int	# the channel number
+    unit: str	# the physical unit of the channel data
 
 
 class Device:
@@ -54,7 +61,8 @@ class Device:
         """
         self.api_uri = dev_uri + "/api"
         self.auth = auth
-        self._reg_info = None
+        self._reg_info = None		# cached register info
+        self._chan_info = None		# cached channel info
 
     def get(self, resource, **kwargs):
         """Issue GET request for /api resource RESOURCE and return the parsed
@@ -153,6 +161,23 @@ class Device:
             self._fetch_reg_info()
         return self._reg_info[regname].formula
 
+    def _fetch_chan_info(self):
+        """Fetch channel info from /capture."""
+        reply = self.get("/capture", params={"i": ""})
+        if reply is None or "channels" not in reply:
+            raise DeviceError("Failed to channel register info.", reply)
+        self._chan_info = {}
+        for chan, info in reply["channels"].items():
+            ci = ChannelInfo(chan=int(chan), unit=info["unit"])
+            self._chan_info[info["name"]] = ci
+
+    def channel_info(self) -> List[ChannelInfo]:
+        """Return the cached channel info as provided by /api/cap?i."""
+        if self._chan_info is None:
+            self._fetch_chan_info()
+        return self._chan_info
+
     def clear_cache(self):
         """Clear the cached contents for this device."""
         self._reg_info = None
+        self._chan_info = None
