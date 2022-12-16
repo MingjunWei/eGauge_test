@@ -120,6 +120,8 @@ class TriggerMode(Enum):
     """The trigger mode determines how the trigger condition is
     evaluated:
 
+    `ANY` triggers immediately.
+
     `RISING` triggers when the trigger channel has a rising edge that
     crosses the trigger level.
 
@@ -134,6 +136,7 @@ class TriggerMode(Enum):
 
     """
 
+    ANY = "any"
     RISING = "rise"
     FALLING = "fall"
     ABOVE = "gt"
