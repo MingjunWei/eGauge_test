@@ -19,6 +19,11 @@ setuptools.setup(
         "pexpect",
         "requests>=2.4.2",
     ],
+    extras_require={
+        "examples": [
+            "matplotlib"
+        ]
+    }
     include_package_data=True,
     entry_points={
         "console_scripts": ["ctid-encoder = egauge.ctid.encoder:main"]

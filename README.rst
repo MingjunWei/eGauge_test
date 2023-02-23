@@ -10,6 +10,24 @@ entire repository without notice.
 
 |
 
+Example Programs
+================
+
+Example programs can be found in the `examples` subdirectory.  If you
+want to run these programs, ensure that all dependencies are installed
+by running the command:
+
+	pip install egauge-python[examples]
+
+Before running these programs, set the following environment variables
+for your preferred test device:
+
+ * EGDEV: URL of the test device (e.g., "http://eGaugeXXXXX.local" or
+   "http://eGaugeXXXX.d.egauge.net")
+ * EGUSR: Username to authenticate with (e.g., "owner")
+ * EGPWD: Password to authenticate with (e.g., "super-secret-pw")
+|
+
 Overview of available modules
 =============================
 
