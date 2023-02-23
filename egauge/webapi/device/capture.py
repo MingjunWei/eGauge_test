@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 eGauge Systems LLC
+# Copyright (c) 2022-2023 eGauge Systems LLC
 #       1644 Conestoga St, Suite 2
 #       Boulder, CO 80301
 #       voice: 720-545-9767
@@ -251,7 +251,8 @@ class Capture:
             raise Error("Failed to start capture.", ret["state"])
         return ret["cookie"]
 
-    def result(self, cookie: int, **kwargs) -> Union[float, CaptureResult]:
+    def result(self, cookie: int, raw = False,
+               **kwargs) -> Union[float, CaptureResult]:
         """Return the result of the capture identified by `cookie`, which must
         be a cookie previously returned by a call to Capture.start().
         The method returns a number if the capture is still in
@@ -262,6 +263,9 @@ class Capture:
 
         """
         params = f"n={cookie}"
+
+        if raw:
+            params += "&r=True"
 
         ret = self._dev.get(f"/capture?{params}", **kwargs)
         if ret.get("error"):
