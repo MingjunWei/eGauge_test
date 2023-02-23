@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020, 2022 eGauge Systems LLC
+# Copyright (c) 2020, 2022-2023 eGauge Systems LLC
 #       1644 Conestoga St, Suite 2
 #       Boulder, CO 80301
 #       voice: 720-545-9767
@@ -37,32 +37,35 @@ from .. import json_api
 from ..error import Error
 from .virtual_register import VirtualRegister
 
+
 class DeviceError(Error):
     """Raised if for device related errors."""
 
 
 @dataclass
 class ChannelInfo:
-    chan: int	# the channel number
-    unit: str	# the physical unit of the channel data
+    chan: int  # the channel number
+    unit: str  # the physical unit of the channel data
 
 
 class Device:
     """This class provides access to an eGauge device's JSON WebAPI.
     See "Web API Design" document for details."""
 
-    def __init__(self, dev_uri, auth=None):
+    def __init__(self, dev_uri, auth=None, verify=True):
         """Return a device object that can be used to access the device a
         address DEV_URI.  An example DEV_URI would be
         "http://proto1.egaug.es".  AUTH should be an authentication object
         that provides the credentials to access the device.  Typically,
-        this should be a JWTAuth object.
+        this should be a JWTAuth object.  VERIFY can be set to False
+        to turn off certificate verification.
 
         """
         self.api_uri = dev_uri + "/api"
         self.auth = auth
-        self._reg_info = None		# cached register info
-        self._chan_info = None		# cached channel info
+        self._reg_info = None  # cached register info
+        self._chan_info = None  # cached channel info
+        self._verify = verify
 
     def get(self, resource, **kwargs):
         """Issue GET request for /api resource RESOURCE and return the parsed
@@ -71,7 +74,12 @@ class Device:
         requests.get().
 
         """
-        return json_api.get(self.api_uri + resource, auth=self.auth, **kwargs)
+        return json_api.get(
+            self.api_uri + resource,
+            auth=self.auth,
+            verify=self._verify,
+            **kwargs
+        )
 
     def put(self, resource, json_data, **kwargs):
         """Issue PUT request with JSON_DATA as body to /api resource RESOURCE
@@ -81,7 +89,11 @@ class Device:
 
         """
         return json_api.put(
-            self.api_uri + resource, json_data, auth=self.auth, **kwargs
+            self.api_uri + resource,
+            json_data,
+            auth=self.auth,
+            verify=self._verify,
+            **kwargs
         )
 
     def post(self, resource, json_data, **kwargs):
@@ -92,7 +104,11 @@ class Device:
 
         """
         return json_api.post(
-            self.api_uri + resource, json_data, auth=self.auth, **kwargs
+            self.api_uri + resource,
+            json_data,
+            auth=self.auth,
+            verify=self._verify,
+            **kwargs
         )
 
     def delete(self, resource, **kwargs):
@@ -103,7 +119,10 @@ class Device:
 
         """
         return json_api.delete(
-            self.api_uri + resource, auth=self.auth, **kwargs
+            self.api_uri + resource,
+            auth=self.auth,
+            verify=self._verify,
+            **kwargs
         )
 
     def _fetch_reg_info(self):
