@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020-2021 eGauge Systems LLC
+# Copyright (c) 2020-2021, 2023 eGauge Systems LLC
 #       1644 Conestoga St, Suite 2
 #       Boulder, CO 80301
 #       voice: 720-545-9767
@@ -38,7 +38,8 @@ def sensor_port_name(index):
     in the range from 0..SENSOR_PORT_COUNT-1.
 
     """
-    return "S%u" % (index + 1)
+    sensor = index + 1
+    return f"S{sensor}"
 
 
 class Local:
@@ -53,6 +54,9 @@ class Local:
     SPEC_L2_L3 = "L23"
     SPEC_L3_L1 = "L31"
     SPEC_LDC = "Ldc"
+    SPEC_D1 = "D1"
+    SPEC_D2 = "D2"
+    SPEC_D3 = "D3"
 
     # Sensor names as they appear in the output:
     NAME_L1 = "L1"
@@ -62,6 +66,9 @@ class Local:
     NAME_L2_L3 = "L2-L3"
     NAME_L3_L1 = "L3-L1"
     NAME_LDC = "Ldc"
+    NAME_D1 = "D1"
+    NAME_D2 = "D2"
+    NAME_D3 = "D3"
     NAME_TEMP_PCB = "Tpcb"
     NAME_HUMID_PCB = "Hpcb"
 
