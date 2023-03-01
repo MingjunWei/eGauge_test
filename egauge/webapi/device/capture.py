@@ -38,9 +38,10 @@ import time
 
 
 from .device import Device
+from ..error import Error
 
 
-class Error(Exception):
+class CaptureError(Error):
     """Base exception for all errors raised by this module."""
 
 
@@ -206,7 +207,7 @@ class Capture:
         """
         cinfo = self._dev.channel_info().get(channel_name)
         if cinfo is None:
-            raise Error("Unknown channel.", channel_name)
+            raise CaptureError("Unknown channel.", channel_name)
         return cinfo.unit
 
     def start(self, duration: float = None, **kwargs) -> int:
@@ -245,14 +246,15 @@ class Capture:
 
         ret = self._dev.get(f"/capture?{params}", **kwargs)
         if ret.get("error"):
-            raise Error(ret.get("error"))
+            raise CaptureError(ret.get("error"))
 
         if ret["state"] == "available":
-            raise Error("Failed to start capture.", ret["state"])
+            raise CaptureError("Failed to start capture.", ret["state"])
         return ret["cookie"]
 
-    def result(self, cookie: int, raw = False,
-               **kwargs) -> Union[float, CaptureResult]:
+    def result(
+        self, cookie: int, raw=False, **kwargs
+    ) -> Union[float, CaptureResult]:
         """Return the result of the capture identified by `cookie`, which must
         be a cookie previously returned by a call to Capture.start().
         The method returns a number if the capture is still in
@@ -269,16 +271,16 @@ class Capture:
 
         ret = self._dev.get(f"/capture?{params}", **kwargs)
         if ret.get("error"):
-            raise Error(ret.get("error"))
+            raise CaptureError(ret.get("error"))
 
         if ret["state"] == "available":
-            raise Error("Capture aborted.")  # somebody interfered?
+            raise CaptureError("Capture aborted.")  # somebody interfered?
         if ret["state"] == "armed":
             return 0.0
         if ret["state"] == "capturing":
             return ret["count"] / ret["max_count"]
         if ret["state"] != "full":
-            raise Error("Unknown capture state.", ret["state"])
+            raise CaptureError("Unknown capture state.", ret["state"])
 
         ch_mask = 0
         for n, w in enumerate(ret["ch_mask"]):
@@ -364,11 +366,11 @@ class Capture:
             params = f"n={cookie}"
         ret = self._dev.get(f"/capture?{params}", **kwargs)
         if ret.get("error"):
-            raise Error(ret.get("error"))
+            raise CaptureError(ret.get("error"))
 
         state = ret.get("state")
         if state != "available":
-            raise Error("Unexpected capture state.", state)
+            raise CaptureError("Unexpected capture state.", state)
 
     def _ch_number(self, name: str) -> int:
         """Get the channel number of the channel named `name` or raise an
@@ -377,7 +379,7 @@ class Capture:
         """
         cinfo = self._dev.channel_info().get(name)
         if cinfo is None:
-            raise Error("Unknown channel.", name)
+            raise CaptureError("Unknown channel.", name)
         return cinfo.chan
 
     def _ch_name(self, ch: int) -> str:

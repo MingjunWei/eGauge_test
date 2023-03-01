@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020, 2022 eGauge Systems LLC
+# Copyright (c) 2020, 2022-2023 eGauge Systems LLC
 #       1644 Conestoga St, Suite 2
 #       Boulder, CO 80301
 #       voice: 720-545-9767
@@ -37,8 +37,10 @@ from deprecated import deprecated
 from .register_type import Units
 from .physical_quantity import PhysicalQuantity
 
+from ..error import Error
 
-class Error(Exception):
+
+class RegRowError(Error):
     """All errors in this module raise this exception."""
 
 
@@ -112,8 +114,8 @@ class RegisterRow:
         if cond:
             return
         if self.is_diff:
-            raise Error("It is not possible to subtract a difference row.")
-        raise Error("The row must be a difference.")
+            raise RegRowError("Cannot subtract a difference row.")
+        raise RegRowError("The row must be a difference.")
 
     def __str__(self):
         return f"{self.ts}: {json.dumps(self.regs)}"

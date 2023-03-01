@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 eGauge Systems LLC
+# Copyright (c) 2022-2023 eGauge Systems LLC
 #       1644 Conestoga St, Suite 2
 #       Boulder, CO 80301
 #       voice: 720-545-9767
@@ -34,11 +34,14 @@ from typing import Callable, List
 
 import re
 
+from ..error import Error
+
+
 ID_PATTERN = re.compile(r"[A-Z]+")
 NUMBER_PATTERN = re.compile(r"(\d+)")
 
 
-class Error(Exception):
+class VirtRegError(Error):
     """Exception raised due to any errors in this module."""
 
 
@@ -143,7 +146,7 @@ class VirtualRegister:
         """
 
         def error(reason):
-            raise Error(f"{reason} (rest: '{formula[state.idx:]}')")
+            raise VirtRegError(f"{reason} (rest: '{formula[state.idx:]}')")
 
         def whitespace():
             while state.idx < len(formula) and formula[state.idx] in [
@@ -276,7 +279,7 @@ if __name__ == "__main__":
     ]:
         try:
             virt = VirtualRegister(formula, lambda reg: regmap[reg])
-        except Error as e:
+        except VirtRegError as e:
             print("Error: Compile failed for formula:", formula)
             print("\t", e)
             continue
@@ -290,8 +293,8 @@ if __name__ == "__main__":
         )
 
     if virt.calc(lambda reg: [10, 20][reg]) != 30:
-        raise Error("Expected 30")
+        raise VirtRegError("Expected 30")
     if virt.calc(lambda reg: [10, -20][reg]) != 10:
-        raise Error("Expected 10")
+        raise VirtRegError("Expected 10")
     if virt.calc(lambda reg: [-10, -20][reg]) != -10:
-        raise Error("Expected 10")
+        raise VirtRegError("Expected 10")
