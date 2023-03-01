@@ -23,7 +23,7 @@ setuptools.setup(
         "examples": [
             "matplotlib"
         ]
-    }
+    },
     include_package_data=True,
     entry_points={
         "console_scripts": ["ctid-encoder = egauge.ctid.encoder:main"]
