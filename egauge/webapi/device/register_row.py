@@ -119,3 +119,10 @@ class RegisterRow:
 
     def __str__(self):
         return f"{self.ts}: {json.dumps(self.regs)}"
+
+    def __iter__(self):
+        """Iterate over cumulative register values.  Each iteration returns
+        one row of data as a RegisterRow.
+
+        """
+        return iter(self.regs)
