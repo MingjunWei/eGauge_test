@@ -31,6 +31,13 @@ import decimal
 import json
 
 from .register_row import RegisterRow
+from .register_type import RegisterType
+
+from ..error import Error
+
+
+class LocalError(Error):
+    """All errors in this module raise this exception."""
 
 
 def sensor_port_name(index):
@@ -163,21 +170,41 @@ class Local:
         for METRIC, MEASUREMENT, and/or SECTION.
 
         """
+        if metric not in [Local.METRIC_RATE, Local.METRIC_CUMUL]:
+            raise LocalError(
+                "Metric must be one of METRIC_RATE or METRIC_CUMUL", metric
+            )
+
         if self.raw is None:
             return None
-        section = self.raw[section]
         regs = {}
-        for key, metrics in section.items():
-            if metric == Local.METRIC_TYPE:
-                val = metrics[metric]
-            else:
-                val = metrics[metric]
-                if section == Local.SECTION_VALUES:
-                    val = val[measurement]
-                if metric == Local.METRIC_CUMUL:
-                    val = int(val)  # convert from decimal string to integer
+        type_codes = {}
+        is_diff = True
+        if metric == Local.METRIC_CUMUL:
+            is_diff = False
+        for key, metrics in self.raw[section].items():
+            if metric not in metrics:
+                continue
+            val = metrics[metric]
+            if section == Local.SECTION_VALUES:
+                val = val[measurement]
+            if metric == Local.METRIC_CUMUL:
+                val = int(val)  # convert from decimal string to integer
             regs[key] = val
-        return RegisterRow(self.ts(), regs)
+            if section == Local.SECTION_ENERGY:
+                # this assumes the sensor pairs measure voltage and current:
+                tc = RegisterType.POWER.value
+            elif section == Local.SECTION_APPARENT:
+                # this assumes the sensor pairs measure voltage and current:
+                tc = RegisterType.APPARENT_POWER.value
+            elif measurement == Local.MEASUREMENT_FREQ:
+                tc = RegisterType.FREQ.value
+            elif Local.METRIC_TYPE in metrics:
+                tc = metrics[Local.METRIC_TYPE]
+
+            regs[key] = val
+            type_codes[key] = tc
+        return RegisterRow(self.ts(), regs, type_codes, is_diff)
 
     def __str__(self):
         return json.dumps(self.raw)
