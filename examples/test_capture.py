@@ -7,23 +7,15 @@
 # This test program illustrates how to capture waveform samples from a
 # meter using the egauge.webapi.device.Capture class.
 #
-import os
 import sys
 
 from matplotlib import pyplot
 
-from egauge import webapi
+import test_common
+
 from egauge.webapi.device import Capture, TriggerMode
 
-# You'll have to provide proper credentials below in order to access
-# the capture interface.  The defaults below will yield a "Forbidden"
-# result.
-dev = webapi.device.Device(
-    os.getenv("EGDEV", "http://DEV.egaug.es"),
-    webapi.JWTAuth(os.getenv("EGUSR", "guest"), os.getenv("EGPWD", "secret")),
-)
-
-cap = Capture(dev)
+cap = Capture(test_common.dev)
 print(f"available channels: {cap.available_channels}")
 
 # capture samples for (up to) the first three channels:
