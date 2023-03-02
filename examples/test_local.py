@@ -81,7 +81,7 @@ print(
 normal = local.row(Local.METRIC_RATE)
 mean = local.row(Local.METRIC_RATE, Local.MEASUREMENT_MEAN)
 freq = local.row(Local.METRIC_RATE, Local.MEASUREMENT_FREQ)
-all_sensors = set(normal) | set(mean) | set(freq)
+all_sensors = sorted(set(normal) | set(mean) | set(freq))
 for sensor in all_sensors:
     pq_n = pq_m = pq_f = None
     if sensor in normal:
@@ -98,7 +98,7 @@ print("\n    Value:")
 normal = local.row(Local.METRIC_CUMUL)
 mean = local.row(Local.METRIC_CUMUL, Local.MEASUREMENT_MEAN)
 freq = local.row(Local.METRIC_CUMUL, Local.MEASUREMENT_FREQ)
-all_sensors = set(normal) | set(mean) | set(freq)
+all_sensors = sorted(set(normal) | set(mean) | set(freq))
 for sensor in all_sensors:
     pq_n = pq_m = pq_f = None
     if sensor in normal:
@@ -117,7 +117,7 @@ print("\n  Energy:")
 print("    Rate:")
 
 row = local.row(Local.METRIC_RATE, section=Local.SECTION_ENERGY)
-for sensor in row:
+for sensor in sorted(row):
     pq = row.pq_rate(sensor)
     line = format_measurements(sensor, [pq])
     print("      " + line)
@@ -125,7 +125,7 @@ for sensor in row:
 print("\n    Value:")
 
 row = local.row(Local.METRIC_CUMUL, section=Local.SECTION_ENERGY)
-for sensor in row:
+for sensor in sorted(row):
     pq = row.pq_accu(sensor)
     line = format_measurements(sensor, [pq])
     print("      " + line)
@@ -137,7 +137,7 @@ print("\n  Apparent Energy:")
 print("    Rate:")
 
 row = local.row(Local.METRIC_RATE, section=Local.SECTION_APPARENT)
-for sensor in row:
+for sensor in sorted(row):
     pq = row.pq_rate(sensor)
     line = format_measurements(sensor, [pq])
     print("      " + line)
@@ -145,7 +145,7 @@ for sensor in row:
 print("\n    Value:")
 
 row = local.row(Local.METRIC_CUMUL, section=Local.SECTION_APPARENT)
-for sensor in row:
+for sensor in sorted(row):
     pq = row.pq_accu(sensor)
     line = format_measurements(sensor, [pq])
     print("      " + line)
