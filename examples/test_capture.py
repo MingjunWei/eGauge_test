@@ -4,9 +4,28 @@
 #
 # See LICENSE file for details.
 #
-# This test program illustrates how to capture waveform samples from a
-# meter using the egauge.webapi.device.Capture class.
-#
+"""This test program demonstrates the use of class
+egauge.webapi.device.Capture to capture waveform data via the /capture
+WebAPI.  When executed, it captures 34ms of waveform data for up to
+the first three channels, then creates a timeplot of the data using
+matplotlib.
+
+Be sure to install egauge-python with a command of the form:
+
+	pip install egauge-python[examples]
+
+to ensure that matplotlib is installed on your system.
+
+You can set environment variables:
+
+	EGDEV - the URL of the meter to use (e.g., http://eGaugeXXX.local)
+	EGUSR - the username to log in to the meter (e.g., "owner")
+	EGPWD - the password for the username
+
+Alternatively, you can edit examples/test_common.py to suit your needs.
+
+"""
+
 import sys
 
 from matplotlib import pyplot

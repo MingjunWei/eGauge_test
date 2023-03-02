@@ -4,9 +4,6 @@
 #
 # See LICENSE file for details.
 #
-# This test program illustrates how to capture waveform samples from a
-# meter using the egauge.webapi.device.Capture class.
-#
 """This test program demonstrates the use of class
 egauge.webapi.device.Local to access the meter-local measurements
 available through the /local WebAPI.  When executed, it fetches all
@@ -15,11 +12,11 @@ the terminal.
 
 You can set environment variables:
 
-	EGDEV	- the URL of the meter to use (e.g., http://eGaugeXXX.local)
-	EGUSR	- the username to use to log in to the meter (e.g., "owner")
-	EGPWD	- the pssword for the username
+	EGDEV - the URL of the meter to use (e.g., http://eGaugeXXX.local)
+	EGUSR - the username to log in to the meter (e.g., "owner")
+	EGPWD - the password for the username
 
-Alternatively, you can edit examples/test_common.py to suite your needs.
+Alternatively, you can edit examples/test_common.py to suit your needs.
 """
 
 from datetime import datetime
