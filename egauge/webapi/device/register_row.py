@@ -54,9 +54,9 @@ class RegisterRow:
     Similarly, RegisterRow.pq_avg() can be called to calculate the
     average register value that was in effect between the two rows."""
 
-    def __init__(self, ts, regs=None, type_codes=None):
+    def __init__(self, ts, regs=None, type_codes=None, is_diff=False):
         self.ts = ts
-        self.is_diff = False
+        self.is_diff = is_diff
         if regs is None:
             self.regs = {}
         else:
@@ -71,6 +71,18 @@ class RegisterRow:
         """Return the time-average of the register value."""
         self._assert(self.is_diff)
         return self.regs[regname] / self.ts
+
+    def pq_rate(self, regname) -> PhysicalQuantity:
+        """Return register rate of change as a physical quantity in the
+        preferred unit of the default unit system (see
+        PhysicalQuantity.set_unit_system()).
+
+        """
+        self._assert(self.is_diff)
+        val = self.regs[regname]
+        return PhysicalQuantity(
+            val, self.type_codes[regname], is_cumul=False
+        ).to_preferred()
 
     def pq_avg(self, regname) -> PhysicalQuantity:
         """Return the time-average of the register value as a physical
@@ -87,12 +99,17 @@ class RegisterRow:
         """Return the accumulated register value as a physical quantity in the
         preferred unit of the default unit system (see
         PhysicalQuantity.set_unit_system())."""
-        self._assert(self.is_diff)
         ute = Units.table[self.type_codes[regname]]
         val = self.regs[regname] * ute.cumul_scale
+
+        # If the row is not a difference row, we cannot convert
+        # between units with additive constants (e.g., °C·d to °F·d).
+        # Set `dt` to None in that case, so those conversions will
+        # fail visibily:
+        dt = self.ts if self.is_diff else None
         return PhysicalQuantity(
             val, self.type_codes[regname], is_cumul=True
-        ).to_preferred(dt=self.ts)
+        ).to_preferred(dt=dt)
 
     def __sub__(self, subtrahend):
         """Subtract two register rows from each other and return the result.
