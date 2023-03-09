@@ -21,7 +21,8 @@ setuptools.setup(
     ],
     extras_require={
         "examples": [
-            "matplotlib"
+            "matplotlib",
+            "readchar"
         ]
     },
     include_package_data=True,
