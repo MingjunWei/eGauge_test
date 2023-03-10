@@ -10,7 +10,7 @@ WebAPI.  When executed, it captures 34ms of waveform data for up to
 the first three channels, then creates a timeplot of the data using
 matplotlib.
 
-Be sure to install egauge-python with a command of the form:
+Install egauge-python with a command of the form:
 
 	pip install egauge-python[examples]
 

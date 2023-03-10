@@ -8,7 +8,7 @@
 egauge.webapi.device.CTidInfo to scan the information from a
 CTid®-enabled sensor and/or to blink the locator LED on such a sensor.
 
-Be sure to install egauge-python with a command of the form:
+Install egauge-python with a command of the form:
 
 	pip install egauge-python[examples]
 
