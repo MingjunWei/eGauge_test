@@ -22,6 +22,7 @@ setuptools.setup(
     extras_require={
         "examples": [
             "matplotlib",
+            "pytz",
             "readchar"
         ]
     },
