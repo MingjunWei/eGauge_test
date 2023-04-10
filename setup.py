@@ -1,7 +1,7 @@
 import os
 import setuptools
 
-with open(os.path.join(os.path.dirname(__file__), "README.rst")) as readme:
+with open(os.path.join(os.path.dirname(__file__), "README.md")) as readme:
     README = readme.read()
 
 # allow setup.py to be run from any path
@@ -33,7 +33,7 @@ setuptools.setup(
     license="MIT License",  # example license
     description=".",
     long_description=README,
-    long_description_content_type="text/x-rst",
+    long_description_content_type="text/markdown",
     url="https://bitbucket.org/egauge/python/",
     author="David Mosberger-Tang",
     author_email="davidm@egauge.net",
