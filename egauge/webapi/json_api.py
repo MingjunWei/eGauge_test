@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020-2022 eGauge Systems LLC
+# Copyright (c) 2020-2023 eGauge Systems LLC
 #       1644 Conestoga St, Suite 2
 #       Boulder, CO 80301
 #       voice: 720-545-9767
@@ -48,12 +48,30 @@ class UnauthenticatedError(Error):
     """Raised when a request fails with HTTP status code 401."""
 
 
+def _raw_response(kwargs):
+    """Check for and remove 'raw_response' keyword argument from KWARGS.
+    Returns whether 'raw_response' is True.
+
+    """
+    if "raw_response" in kwargs:
+        raw_response = kwargs["raw_response"]
+        del kwargs["raw_response"]
+        return raw_response is True
+    return False
+
+
 def get(resource, **kwargs):
     """Issue GET request for RESOURCE and return the parsed JSON data or
     None if the request failed or returned invalid JSON data.
+
+    If keyword argument raw_response is True, the raw requests
+    response object is returned.  This is useful, for example, if the
+    caller needs to get a response header.
+
     Additional keyword arguments are passed on to requests.get().
 
     """
+    raw = _raw_response(kwargs)
     try:
         r = requests.get(resource, **kwargs)
     except requests.exceptions.RequestException as e:
@@ -70,6 +88,9 @@ def get(resource, **kwargs):
         raise JSONAPIError(
             "Unexpected HTTP status code.", r.status_code, r.content
         )
+    if raw:
+        return r
+
     reply = None
     try:
         if r.text:
@@ -82,13 +103,19 @@ def get(resource, **kwargs):
 def patch(resource, json_data, **kwargs):
     """Issue PATCH request with JSON_DATA as body to RESOURCE and return
     parsed JSON reply or None if the request failed or returned
-    invalid JSON data.  Additional keyword arguments are passed on to
-    requests.patch().
+    invalid JSON data.
+
+    If keyword argument raw_response is True, the raw requests
+    response object is returned.  This is useful, for example, if the
+    caller needs to get a response header.
+
+    Additional keyword arguments are passed on to requests.patch().
 
     """
     headers = kwargs.get("headers", {})
     headers["Content-Type"] = "application/json"
     kwargs["headers"] = headers
+    raw = _raw_response(kwargs)
     try:
         r = requests.patch(resource, json=json_data, **kwargs)
     except requests.exceptions.RequestException as e:
@@ -108,6 +135,9 @@ def patch(resource, json_data, **kwargs):
         raise JSONAPIError(
             "Unexpected HTTP status code.", r.status_code, r.content
         )
+    if raw:
+        return r
+
     reply = None
     try:
         if r.text:
@@ -120,13 +150,19 @@ def patch(resource, json_data, **kwargs):
 def put(resource, json_data, **kwargs):
     """Issue PUT request with JSON_DATA as body to RESOURCE and return
     parsed JSON reply or None if the request failed or returned
-    invalid JSON data.  Additional keyword arguments are passed on to
-    requests.put().
+    invalid JSON data.
+
+    If keyword argument raw_response is True, the raw requests
+    response object is returned.  This is useful, for example, if the
+    caller needs to get a response header.
+
+    Additional keyword arguments are passed on to requests.put().
 
     """
     headers = kwargs.get("headers", {})
     headers["Content-Type"] = "application/json"
     kwargs["headers"] = headers
+    raw = _raw_response(kwargs)
     try:
         r = requests.put(resource, json=json_data, **kwargs)
     except requests.exceptions.RequestException as e:
@@ -146,6 +182,9 @@ def put(resource, json_data, **kwargs):
         raise JSONAPIError(
             "Unexpected HTTP status code.", r.status_code, r.content
         )
+    if raw:
+        return r
+
     reply = None
     try:
         if r.text:
@@ -158,13 +197,19 @@ def put(resource, json_data, **kwargs):
 def post(resource, json_data, **kwargs):
     """Issue POST request with JSON_DATA as body to RESOURCE and return
     parsed JSON reply or None if the request failed or returned
-    invalid JSON data.  Additional keyword arguments are passed on to
-    requests.post().
+    invalid JSON data.
+
+    If keyword argument raw_response is True, the raw requests
+    response object is returned.  This is useful, for example, if the
+    caller needs to get a response header.
+
+    Additional keyword arguments are passed on to requests.post().
 
     """
     headers = kwargs.get("headers", {})
     headers["Content-Type"] = "application/json"
     kwargs["headers"] = headers
+    raw = _raw_response(kwargs)
     try:
         r = requests.post(resource, json=json_data, **kwargs)
     except requests.exceptions.RequestException as e:
@@ -184,6 +229,9 @@ def post(resource, json_data, **kwargs):
         raise JSONAPIError(
             "Unexpected HTTP status code.", r.status_code, r.content
         )
+    if raw:
+        return r
+
     reply = None
     try:
         if r.text:
@@ -196,9 +244,15 @@ def post(resource, json_data, **kwargs):
 def delete(resource, **kwargs):
     """Issue DELETE request for RESOURCE and return the parsed JSON data
     or None if the request failed or returned invalid JSON data.
+
+    If keyword argument raw_response is True, the raw requests
+    response object is returned.  This is useful, for example, if the
+    caller needs to get a response header.
+
     Additional keyword arguments are passed on to requests.delete().
 
     """
+    raw = _raw_response(kwargs)
     try:
         r = requests.delete(resource, **kwargs)
     except requests.exceptions.RequestException as e:
@@ -215,6 +269,9 @@ def delete(resource, **kwargs):
         raise JSONAPIError(
             "Unexpected HTTP status code.", r.status_code, r.content
         )
+    if raw:
+        return r
+
     reply = None
     try:
         if r.text:
