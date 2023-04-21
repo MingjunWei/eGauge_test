@@ -55,10 +55,12 @@ class Device:
     def __init__(self, dev_uri, auth=None, verify=True):
         """Return a device object that can be used to access the device a
         address DEV_URI.  An example DEV_URI would be
-        "http://proto1.egaug.es".  AUTH should be an authentication object
-        that provides the credentials to access the device.  Typically,
-        this should be a JWTAuth object.  VERIFY can be set to False
-        to turn off certificate verification.
+        "http://eGaugeHQ.egauge.io".  AUTH should be an authentication
+        object that provides the credentials to access the device.
+        Typically, this should be a JWTAuth object.  VERIFY can be set
+        to False to turn off certificate verification.  It may also be
+        set to the path of a file that holds the certificate the
+        server should be validated against.
 
         """
         self.api_uri = dev_uri + "/api"
@@ -74,12 +76,9 @@ class Device:
         requests.get().
 
         """
-        return json_api.get(
-            self.api_uri + resource,
-            auth=self.auth,
-            verify=self._verify,
-            **kwargs
-        )
+        if "verify" not in kwargs:
+            kwargs["verify"] = self._verify
+        return json_api.get(self.api_uri + resource, auth=self.auth, **kwargs)
 
     def put(self, resource, json_data, **kwargs):
         """Issue PUT request with JSON_DATA as body to /api resource RESOURCE
@@ -88,12 +87,10 @@ class Device:
         passed on to requests.put().
 
         """
+        if "verify" not in kwargs:
+            kwargs["verify"] = self._verify
         return json_api.put(
-            self.api_uri + resource,
-            json_data,
-            auth=self.auth,
-            verify=self._verify,
-            **kwargs
+            self.api_uri + resource, json_data, auth=self.auth, **kwargs
         )
 
     def post(self, resource, json_data, **kwargs):
@@ -103,12 +100,10 @@ class Device:
         passed on to requests.post().
 
         """
+        if "verify" not in kwargs:
+            kwargs["verify"] = self._verify
         return json_api.post(
-            self.api_uri + resource,
-            json_data,
-            auth=self.auth,
-            verify=self._verify,
-            **kwargs
+            self.api_uri + resource, json_data, auth=self.auth, **kwargs
         )
 
     def delete(self, resource, **kwargs):
@@ -118,11 +113,10 @@ class Device:
         requests.post().
 
         """
+        if "verify" not in kwargs:
+            kwargs["verify"] = self._verify
         return json_api.delete(
-            self.api_uri + resource,
-            auth=self.auth,
-            verify=self._verify,
-            **kwargs
+            self.api_uri + resource, auth=self.auth, **kwargs
         )
 
     def _fetch_reg_info(self):
