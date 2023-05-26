@@ -241,24 +241,24 @@ def _create_units():
     p16 = PrimaryUnit("Ω·s")
     pus.add(p16)
 
-    p17 = PrimaryUnit("W/m^2", "Irradiance")
+    p17 = PrimaryUnit("W/m²", "Irradiance")
     pus.add(p17)
-    pus.add_scaled(p17, "yW/m^2", 1e+24, "yocto")
-    pus.add_scaled(p17, "zW/m^2", 1e+21, "zepto")
-    pus.add_scaled(p17, "aW/m^2", 1e+18, "atto")
-    pus.add_scaled(p17, "fW/m^2", 1000000000000000, "femto")
-    pus.add_scaled(p17, "pW/m^2", 1000000000000, "pico")
-    pus.add_scaled(p17, "nW/m^2", 1000000000, "nano")
-    pus.add_scaled(p17, "μW/m^2", 1000000, "micro")
-    pus.add_scaled(p17, "mW/m^2", 1000, "milli")
-    pus.add_scaled(p17, "kW/m^2", 1 / 1000, "kilo")
-    pus.add_scaled(p17, "MW/m^2", 1 / 1000000, "mega")
-    pus.add_scaled(p17, "GW/m^2", 1 / 1000000000, "giga")
-    pus.add_scaled(p17, "TW/m^2", 1 / 1000000000000, "tera")
-    pus.add_scaled(p17, "PW/m^2", 1 / 1000000000000000, "peta")
-    pus.add_scaled(p17, "EW/m^2", 1 / 1e+18, "exa")
-    pus.add_scaled(p17, "ZW/m^2", 1 / 1e+21, "zetta")
-    pus.add_scaled(p17, "YW/m^2", 1 / 1e+24, "yotta")
+    pus.add_scaled(p17, "yW/m²", 1e+24, "yocto")
+    pus.add_scaled(p17, "zW/m²", 1e+21, "zepto")
+    pus.add_scaled(p17, "aW/m²", 1e+18, "atto")
+    pus.add_scaled(p17, "fW/m²", 1000000000000000, "femto")
+    pus.add_scaled(p17, "pW/m²", 1000000000000, "pico")
+    pus.add_scaled(p17, "nW/m²", 1000000000, "nano")
+    pus.add_scaled(p17, "μW/m²", 1000000, "micro")
+    pus.add_scaled(p17, "mW/m²", 1000, "milli")
+    pus.add_scaled(p17, "kW/m²", 1 / 1000, "kilo")
+    pus.add_scaled(p17, "MW/m²", 1 / 1000000, "mega")
+    pus.add_scaled(p17, "GW/m²", 1 / 1000000000, "giga")
+    pus.add_scaled(p17, "TW/m²", 1 / 1000000000000, "tera")
+    pus.add_scaled(p17, "PW/m²", 1 / 1000000000000000, "peta")
+    pus.add_scaled(p17, "EW/m²", 1 / 1e+18, "exa")
+    pus.add_scaled(p17, "ZW/m²", 1 / 1e+21, "zetta")
+    pus.add_scaled(p17, "YW/m²", 1 / 1e+24, "yotta")
 
     p18 = PrimaryUnit("var", "Reactive Power")
     pus.add(p18)
@@ -291,7 +291,7 @@ def _create_units():
     p22 = PrimaryUnit("°·s")
     pus.add(p22)
 
-    p23 = PrimaryUnit("m^3/s", "Volumetric flow")
+    p23 = PrimaryUnit("m³/s", "Volumetric flow")
     pus.add(p23)
 
     p24 = PrimaryUnit("Pa", "Pressure")
@@ -477,26 +477,26 @@ def _create_units():
     au = AlternateUnit("Btu", p34, c4)
     pus.add(au)
 
-    p35 = PrimaryUnit("W·s/m^2")
+    p35 = PrimaryUnit("W·s/m²")
     pus.add(p35)
-    au = AlternateUnit("Wh/m^2", p35, c2)
+    au = AlternateUnit("Wh/m²", p35, c2)
     pus.add(au)
-    pus.add_scaled(au, "yWh/m^2", 1e+24, "yocto")
-    pus.add_scaled(au, "zWh/m^2", 1e+21, "zepto")
-    pus.add_scaled(au, "aWh/m^2", 1e+18, "atto")
-    pus.add_scaled(au, "fWh/m^2", 1000000000000000, "femto")
-    pus.add_scaled(au, "pWh/m^2", 1000000000000, "pico")
-    pus.add_scaled(au, "nWh/m^2", 1000000000, "nano")
-    pus.add_scaled(au, "μWh/m^2", 1000000, "micro")
-    pus.add_scaled(au, "mWh/m^2", 1000, "milli")
-    pus.add_scaled(au, "kWh/m^2", 1 / 1000, "kilo")
-    pus.add_scaled(au, "MWh/m^2", 1 / 1000000, "mega")
-    pus.add_scaled(au, "GWh/m^2", 1 / 1000000000, "giga")
-    pus.add_scaled(au, "TWh/m^2", 1 / 1000000000000, "tera")
-    pus.add_scaled(au, "PWh/m^2", 1 / 1000000000000000, "peta")
-    pus.add_scaled(au, "EWh/m^2", 1 / 1e+18, "exa")
-    pus.add_scaled(au, "ZWh/m^2", 1 / 1e+21, "zetta")
-    pus.add_scaled(au, "YWh/m^2", 1 / 1e+24, "yotta")
+    pus.add_scaled(au, "yWh/m²", 1e+24, "yocto")
+    pus.add_scaled(au, "zWh/m²", 1e+21, "zepto")
+    pus.add_scaled(au, "aWh/m²", 1e+18, "atto")
+    pus.add_scaled(au, "fWh/m²", 1000000000000000, "femto")
+    pus.add_scaled(au, "pWh/m²", 1000000000000, "pico")
+    pus.add_scaled(au, "nWh/m²", 1000000000, "nano")
+    pus.add_scaled(au, "μWh/m²", 1000000, "micro")
+    pus.add_scaled(au, "mWh/m²", 1000, "milli")
+    pus.add_scaled(au, "kWh/m²", 1 / 1000, "kilo")
+    pus.add_scaled(au, "MWh/m²", 1 / 1000000, "mega")
+    pus.add_scaled(au, "GWh/m²", 1 / 1000000000, "giga")
+    pus.add_scaled(au, "TWh/m²", 1 / 1000000000000, "tera")
+    pus.add_scaled(au, "PWh/m²", 1 / 1000000000000000, "peta")
+    pus.add_scaled(au, "EWh/m²", 1 / 1e+18, "exa")
+    pus.add_scaled(au, "ZWh/m²", 1 / 1e+21, "zetta")
+    pus.add_scaled(au, "YWh/m²", 1 / 1e+24, "yotta")
 
     c18 = PhysicalUnitConversion(False,
         lambda x, t=None: 0.00220462*x,
@@ -572,7 +572,7 @@ def _create_units():
     au = AlternateUnit("mph", p11, c14)
     pus.add(au)
 
-    p36 = PrimaryUnit("m^3")
+    p36 = PrimaryUnit("m³")
     pus.add(p36)
 
     c20 = PhysicalUnitConversion(False,
@@ -712,10 +712,10 @@ class Units:
     # Preferred units for METRIC and IMPERIAL systems:
     preferred = [
         ['kW', 'kWh', 'kVA', 'kVAh', 'kvar', 'kvahr', 'kg', 'kg/s',
-         'kWh/m^2', 'km/h', 'hPa', 'Ah', 'Vh', 'L/m', 'L', '°C',
+         'kWh/m²', 'km/h', 'hPa', 'Ah', 'Vh', 'L/m', 'L', '°C',
          '°C·d'],
         ['kW', 'kWh', 'kVA', 'kVAh', 'kvar', 'kvahr', 'lbs', 'lbs/s',
-         'kWh/m^2', 'mph', 'inHg', 'Ah', 'Vh', 'ft', '°F', '°F·d',
+         'kWh/m²', 'mph', 'inHg', 'Ah', 'Vh', 'ft', '°F', '°F·d',
          'lbs·s', 'inHg·s', 'ft·s', 'gpm', 'gal']
     ]
 
@@ -753,8 +753,8 @@ class Units:
         'R': UnitTableEntry(fix_scale=1, rate_unit='Ω',
                             cumul_scale=1, cumul_unit='Ω·s',
                             name='Resistance'),
-        'Ee': UnitTableEntry(fix_scale=1, rate_unit='W/m^2',
-                             cumul_scale=1 / 3600000, cumul_unit='kWh/m^2',
+        'Ee': UnitTableEntry(fix_scale=1, rate_unit='W/m²',
+                             cumul_scale=1 / 3600000, cumul_unit='kWh/m²',
                              name='Irradiance'),
         'PQ': UnitTableEntry(fix_scale=1, rate_unit='var',
                              cumul_scale=1 / 3600000, cumul_unit='kvahr',
@@ -768,7 +768,7 @@ class Units:
         'h': UnitTableEntry(fix_scale=1000, rate_unit='%',
                             cumul_scale=1 / 1000, cumul_unit='%·s',
                             name='Humidity'),
-        'Qv': UnitTableEntry(fix_scale=1000000000, rate_unit='m^3/s',
+        'Qv': UnitTableEntry(fix_scale=1000000000, rate_unit='m³/s',
                              cumul_scale=1 / 1000000, cumul_unit='L',
                              name='Volumetric flow'),
         'Pa': UnitTableEntry(fix_scale=1, rate_unit='Pa',
