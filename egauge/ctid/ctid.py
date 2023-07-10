@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2016-2017, 2019-2022 eGauge Systems LLC
+# Copyright (c) 2016-2017, 2019-2023 eGauge Systems LLC
 # 	1644 Conestoga St, Suite 2
 # 	Boulder, CO 80301
 # 	voice: 720-545-9767
@@ -746,10 +746,7 @@ class Table:
                 if self.version > 1:
                     self.m_f12_f12("r_source", "Ω", "r_load", "Ω")
 
-    # TODO: Default to version 4 for now.  Once eGauge firmware v4.1.3
-    # or later is widely in use, we can switch this back to
-    # version=CTID_VERSION.
-    def encode(self, version=4):
+    def encode(self, version=CTID_VERSION):
         """Encode the table contents and store is as a sequence of bytes in
         property ``raw_data''.
 
