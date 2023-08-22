@@ -331,6 +331,7 @@ class Capture:
                 if ci >= len(channel_names):
                     ci = 0
                     sample_count += 1
+                name = channel_names[ci]
                 if cs is None:
                     continue  # we're not interested in this channel
                 cs.ts.append(dt)
